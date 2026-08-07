@@ -3349,7 +3349,9 @@ beforeEach(function () {
     }
 });
 
-it('never lets two orders take the same last unit', function () {
+// Named for what it actually verifies: the stock check lives inside the locked
+// transaction. It does not spawn parallel processes — see the note below.
+it('checks stock inside the locked transaction so the second order is refused', function () {
     $product = Product::factory()->create(['base_price_minor' => 8900]);
     $variant = Variant::factory()->for($product)->create(['stock_quantity' => 1, 'weight_grams' => 120]);
 
