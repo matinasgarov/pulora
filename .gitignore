@@ -16,3 +16,21 @@
 
 # SDD workspace (ledger, briefs, review packages)
 /.superpowers
+
+# Laravel
+/.phpunit.cache
+/public/hot
+/storage/pail
+.env.backup
+.env.production
+.phpactor.json
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
