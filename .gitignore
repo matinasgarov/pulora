@@ -13,3 +13,6 @@
 # git worktrees for isolated task execution
 /.worktrees
 
+
+# SDD workspace (ledger, briefs, review packages)
+/.superpowers
