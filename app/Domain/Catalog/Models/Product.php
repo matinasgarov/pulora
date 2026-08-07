@@ -19,6 +19,8 @@ class Product extends Model
 
     public function variants() { return $this->hasMany(Variant::class); }
     public function images() { return $this->hasMany(ProductImage::class)->orderBy('sort_order'); }
+    public function personalizationOptions() { return $this->hasMany(PersonalizationOption::class); }
+    public function variantOptions() { return $this->hasMany(VariantOption::class)->orderBy('sort_order'); }
 
     public function scopeActive(Builder $q): Builder { return $q->where('is_active', true); }
 
