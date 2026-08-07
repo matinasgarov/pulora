@@ -9,3 +9,7 @@
 .env.*
 !.env.example
 .phpunit.result.cache
+
+# git worktrees for isolated task execution
+/.worktrees
+
