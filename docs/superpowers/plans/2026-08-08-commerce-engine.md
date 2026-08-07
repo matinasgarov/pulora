@@ -2906,13 +2906,15 @@ it('leaves the order untouched on a forged signature', function () {
     ])->assertStatus(400);
 
     expect($this->order->fresh()->status)->toBe(OrderStatus::PendingPayment);
-    Mail::assertNothingSent();
+
+    // The operator IS alerted here (see Step 4); the customer is not.
+    Mail::assertNotSent(OrderConfirmation::class);
 });
 
 it('ignores a callback for an unknown reference', function () {
     $this->post('/payment/callback', signedCallback('MOCK-DOES-NOT-EXIST'))->assertStatus(404);
 
-    Mail::assertNothingSent();
+    Mail::assertNotSent(OrderConfirmation::class);
 });
 
 it('does not mark paid when the gateway reports failure', function () {
