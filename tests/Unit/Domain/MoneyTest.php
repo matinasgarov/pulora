@@ -15,3 +15,12 @@ it('rounds percentages half up to whole minor units', function () {
     // 335 * 10% = 33.5 -> half up -> 34
     expect(Money::percentOf(335, 10))->toBe(34);
 });
+
+it('rounds exact half-boundaries up using integer arithmetic', function () {
+    // 110 * 5 = 550 -> 5.5 -> half up -> 6
+    expect(Money::percentOf(110, 5))->toBe(6);
+    // 350 * 1 = 350 -> 3.5 -> half up -> 4
+    expect(Money::percentOf(350, 1))->toBe(4);
+    // just below the boundary stays down
+    expect(Money::percentOf(349, 1))->toBe(3);
+});

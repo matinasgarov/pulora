@@ -9,8 +9,10 @@ final class Money
         return number_format($minor / 100, 2, '.', '') . ' ' . $currency;
     }
 
-    public static function percentOf(int $minor, float $percent): int
+    public static function percentOf(int $minor, int $percent): int
     {
-        return (int) round($minor * $percent / 100, 0, PHP_ROUND_HALF_UP);
+        $numerator = $minor * $percent;
+
+        return intdiv($numerator, 100) + (($numerator % 100) >= 50 ? 1 : 0);
     }
 }
