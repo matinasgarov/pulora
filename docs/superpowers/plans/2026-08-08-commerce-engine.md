@@ -149,7 +149,9 @@ The smallest piece of the system and the one every other task depends on. Doing 
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `Money::format(int $minor, string $currency = 'AZN'): string`, `Money::percentOf(int $minor, float $percent): int`
+- Produces: `Money::format(int $minor, string $currency = 'AZN'): string`, `Money::percentOf(int $minor, int $percent): int`
+
+  `$percent` is an **integer**, matching `discount_codes.value` (`unsignedInteger`) in Task 7. The arithmetic is exact integer math — a float parameter with float division misrounds at half-boundaries (`percentOf(375, 9.2)` yields 34 where half-up requires 35) and only ever served as a trap.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -170,6 +172,12 @@ it('rounds percentages half up to whole minor units', function () {
     expect(Money::percentOf(333, 10))->toBe(33);
     // 335 * 10% = 33.5 -> half up -> 34
     expect(Money::percentOf(335, 10))->toBe(34);
+});
+
+it('rounds exact half-boundaries up using integer arithmetic', function () {
+    expect(Money::percentOf(110, 5))->toBe(6);    // 550 -> 5.5 -> 6
+    expect(Money::percentOf(350, 1))->toBe(4);    // 350 -> 3.5 -> 4
+    expect(Money::percentOf(349, 1))->toBe(3);    // 349 -> 3.49 -> 3
 });
 ```
 
@@ -194,9 +202,11 @@ final class Money
         return number_format($minor / 100, 2, '.', '') . ' ' . $currency;
     }
 
-    public static function percentOf(int $minor, float $percent): int
+    public static function percentOf(int $minor, int $percent): int
     {
-        return (int) round($minor * $percent / 100, 0, PHP_ROUND_HALF_UP);
+        $numerator = $minor * $percent;
+
+        return intdiv($numerator, 100) + (($numerator % 100) >= 50 ? 1 : 0);
     }
 }
 ```
