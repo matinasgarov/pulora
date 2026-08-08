@@ -1296,7 +1296,7 @@ git commit -m "feat: add zone and weight-bracket shipping calculator"
 - Produces:
   - `DiscountResult` — readonly: `int $codeId`, `string $code`, `int $amountMinor`
   - `DiscountService::apply(string $code, int $subtotalMinor): DiscountResult` — throws `InvalidDiscountException`
-  - `DiscountService::consume(int $codeId): void` — increments `times_used`, called inside the `markPaid` transaction in Task 11
+  - `DiscountService::consume(int $codeId): bool` — increments `times_used` **only while the code is under its limit**, in one atomic statement; returns `false` if the limit was already reached. Called inside the `markPaid` transaction in Task 11, which alerts the operator on `false`.
 
 - [ ] **Step 1: Write the migration**
 
@@ -1486,9 +1486,23 @@ class DiscountService
         return new DiscountResult($discount->id, $discount->code, min($amount, $subtotalMinor));
     }
 
-    public function consume(int $codeId): void
+    /**
+     * Increment usage, but only while the code remains under its limit.
+     *
+     * Returns false when the limit was already reached. The caller has taken
+     * payment by this point, so the order stands and the operator is alerted
+     * rather than the customer being refused.
+     */
+    public function consume(int $codeId): bool
     {
-        DiscountCode::where('id', $codeId)->increment('times_used');
+        $affected = DiscountCode::where('id', $codeId)
+            ->where(function ($query) {
+                $query->whereNull('usage_limit')
+                    ->orWhereColumn('times_used', '<', 'usage_limit');
+            })
+            ->increment('times_used');
+
+        return $affected > 0;
     }
 }
 ```
@@ -2369,10 +2383,12 @@ The single most important behaviour in the system. Gateways retry callbacks; dup
 **Files:**
 - Modify: `app/Domain/Order/OrderService.php`
 - Create: `app/Mail/OrderConfirmation.php`, `resources/views/mail/order-confirmation.blade.php`
+- Create: `app/Mail/PaymentAnomaly.php`, `resources/views/mail/payment-anomaly.blade.php`, `config/shop.php`
+  (operator-alert plumbing — first needed here for the over-redeemed-discount alert; Task 13 reuses it)
 - Test: `tests/Feature/Order/MarkPaidTest.php`
 
 **Interfaces:**
-- Consumes: `Order`, `OrderStatus`, `DiscountService::consume()` (Task 7)
+- Consumes: `Order`, `OrderStatus`, `DiscountService::consume(): bool` (Task 7)
 - Produces: `OrderService::markPaid(Order $order, string $paymentReference): bool` — returns `true` if this call transitioned the order, `false` if it was already paid
 
 - [ ] **Step 1: Write the failing test**
@@ -2521,6 +2537,7 @@ Add these imports to `OrderService.php`:
 ```php
 use App\Domain\Discount\DiscountService;
 use App\Mail\OrderConfirmation;
+use App\Mail\PaymentAnomaly;
 use Illuminate\Support\Facades\Mail;
 ```
 
@@ -2531,7 +2548,9 @@ public function __construct(private DiscountService $discounts) {}
 
 public function markPaid(Order $order, string $paymentReference): bool
 {
-    $transitioned = DB::transaction(function () use ($order, $paymentReference) {
+    $overRedeemedCode = false;
+
+    $transitioned = DB::transaction(function () use ($order, $paymentReference, &$overRedeemedCode) {
         $locked = Order::whereKey($order->id)->lockForUpdate()->first();
 
         if (! $locked || $locked->status !== OrderStatus::PendingPayment) {
@@ -2546,7 +2565,11 @@ public function markPaid(Order $order, string $paymentReference): bool
         ]);
 
         if ($locked->discount_code_id) {
-            $this->discounts->consume($locked->discount_code_id);
+            // consume() is conditional: false means the code was already at its
+            // limit when a concurrent checkout beat us to the last use. Payment
+            // has already been taken, so the order stands and the operator is
+            // told — the customer is never punished for our race.
+            $overRedeemedCode = ! $this->discounts->consume($locked->discount_code_id);
         }
 
         return true;
@@ -2554,6 +2577,13 @@ public function markPaid(Order $order, string $paymentReference): bool
 
     if ($transitioned) {
         Mail::to($order->customer_email)->send(new OrderConfirmation($order->fresh()));
+
+        if ($overRedeemedCode) {
+            Mail::to(config('shop.operator_email'))->send(new PaymentAnomaly(
+                'Discount code redeemed past its usage limit',
+                $order->order_number,
+            ));
+        }
     }
 
     return $transitioned;
@@ -3015,6 +3045,8 @@ it('emails the operator when a callback signature is forged', function () {
         fn ($m) => $m->hasTo('owner@example.com'));
 });
 ```
+
+**Note:** `config/shop.php`, `app/Mail/PaymentAnomaly.php`, and the anomaly Blade view were already created in Task 11 for the over-redeemed-discount alert. If they exist, reuse them unchanged and skip their creation below — this task only adds the two callback alert sites.
 
 Create `config/shop.php`:
 
