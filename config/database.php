@@ -62,6 +62,20 @@ return [
             ]) : [],
         ],
 
+        'mysql_test' => [
+            'driver' => 'mysql',
+            'host' => env('MYSQL_TEST_HOST', '127.0.0.1'),
+            'port' => env('MYSQL_TEST_PORT', '3307'),
+            'database' => env('MYSQL_TEST_DATABASE', 'leather_shop_test'),
+            'username' => env('MYSQL_TEST_USERNAME', 'root'),
+            'password' => env('MYSQL_TEST_PASSWORD', 'root'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => 'InnoDB',
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
