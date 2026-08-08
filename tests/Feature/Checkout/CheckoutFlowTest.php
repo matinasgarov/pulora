@@ -94,6 +94,40 @@ it('requires a valid email and address', function () {
         ->assertSessionHasErrors(['email', 'name', 'address_line1', 'city', 'country_code']);
 });
 
+it('preserves the cart after redirecting to the gateway, before payment completes', function () {
+    app(CartService::class)->add($this->variant->id, 1);
+
+    $this->post('/checkout', checkoutPayload(['shipping_rate_id' => $this->rate->id]))
+        ->assertRedirect();
+
+    // Spec §5: an abandoned payment leaves the cart preserved. It is only cleared
+    // once the confirmation page finds the order actually Paid.
+    expect(app(CartService::class)->snapshot()->isEmpty())->toBeFalse();
+});
+
+it('clears the cart on the confirmation page once the order is paid', function () {
+    app(CartService::class)->add($this->variant->id, 1);
+
+    $this->post('/checkout', checkoutPayload(['shipping_rate_id' => $this->rate->id]));
+
+    $order = Order::first();
+    $order->update(['status' => OrderStatus::Paid]);
+
+    $this->get('/checkout/confirmation')->assertOk();
+
+    expect(app(CartService::class)->snapshot()->isEmpty())->toBeTrue();
+});
+
+it('does not clear the cart on the confirmation page while the order is still pending', function () {
+    app(CartService::class)->add($this->variant->id, 1);
+
+    $this->post('/checkout', checkoutPayload(['shipping_rate_id' => $this->rate->id]));
+
+    $this->get('/checkout/confirmation')->assertOk();
+
+    expect(app(CartService::class)->snapshot()->isEmpty())->toBeFalse();
+});
+
 it('keeps the order and the cart when the gateway is unreachable', function () {
     app(CartService::class)->add($this->variant->id, 1);
 

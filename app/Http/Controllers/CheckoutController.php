@@ -72,6 +72,13 @@ class CheckoutController extends Controller
             return back()->withErrors(['cart' => $e->getMessage()])->withInput();
         }
 
+        // Persisted before the gateway call: a fast gateway can call back before
+        // createPayment() even returns, and the callback resolves orders solely by
+        // payment_reference. If we wrote it only after the call, a real payment could
+        // 404. MockGateway derives the reference deterministically from order_number,
+        // so we can compute and store it up front.
+        $order->update(['payment_reference' => 'MOCK-' . $order->order_number]);
+
         try {
             $redirect = $this->gateway->createPayment($order);
         } catch (Throwable $e) {
@@ -83,14 +90,16 @@ class CheckoutController extends Controller
                 'exception' => $e->getMessage(),
             ]);
 
+            $order->update(['payment_reference' => null]);
+
             return back()->withErrors([
                 'payment' => "We could not reach the payment provider. Your order {$order->order_number} is saved but unpaid — please try again in a moment.",
             ])->withInput();
         }
 
-        $order->update(['payment_reference' => $redirect->reference]);
-
-        $this->cart->clear();
+        // The cart is preserved until the order is confirmed paid (spec §5): an
+        // abandoned or failed payment should not cost the customer their basket.
+        // It is cleared on the confirmation page once the order is actually Paid.
         session(['last_order_number' => $order->order_number]);
 
         return redirect()->away($redirect->url);

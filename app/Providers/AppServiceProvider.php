@@ -12,10 +12,22 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(\App\Domain\Payment\PaymentGateway::class, function ($app) {
-            return match (config('services.payment.driver')) {
-                'mock' => new \App\Domain\Payment\MockGateway(config('services.payment.mock_secret')),
+            $driver = config('services.payment.driver');
+
+            if ($driver === null || $driver === '') {
+                throw new \RuntimeException(
+                    'No payment driver configured. Set PAYMENT_DRIVER in your environment.'
+                );
+            }
+
+            return match ($driver) {
+                'mock' => $app->environment(['local', 'testing'])
+                    ? new \App\Domain\Payment\MockGateway(config('services.payment.mock_secret'))
+                    : throw new \RuntimeException(
+                        'The mock payment driver is not permitted outside local/testing environments.'
+                    ),
                 default => throw new \RuntimeException(
-                    'Unknown payment driver: ' . config('services.payment.driver')
+                    'Unknown payment driver: ' . $driver
                 ),
             };
         });

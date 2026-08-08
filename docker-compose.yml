@@ -6,4 +6,3 @@ services:
       MYSQL_DATABASE: leather_shop_test
     ports:
       - "3307:3306"
-    command: --default-authentication-plugin=caching_sha2_password
