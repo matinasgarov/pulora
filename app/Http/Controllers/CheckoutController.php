@@ -13,6 +13,8 @@ use App\Domain\Shipping\NoShippingRateException;
 use App\Domain\Shipping\ShippingCalculator;
 use App\Http\Requests\CheckoutRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CheckoutController extends Controller
 {
@@ -70,7 +72,22 @@ class CheckoutController extends Controller
             return back()->withErrors(['cart' => $e->getMessage()])->withInput();
         }
 
-        $redirect = $this->gateway->createPayment($order);
+        try {
+            $redirect = $this->gateway->createPayment($order);
+        } catch (Throwable $e) {
+            // The order is already reserved and saved. Leave it pending — Task 14's
+            // expiry job returns the stock if the customer never comes back — and keep
+            // the cart so retrying costs them nothing.
+            Log::error('Payment gateway could not be reached', [
+                'order_number' => $order->order_number,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors([
+                'payment' => "We could not reach the payment provider. Your order {$order->order_number} is saved but unpaid — please try again in a moment.",
+            ])->withInput();
+        }
+
         $order->update(['payment_reference' => $redirect->reference]);
 
         $this->cart->clear();

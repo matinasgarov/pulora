@@ -93,3 +93,24 @@ it('requires a valid email and address', function () {
     $this->post('/checkout', ['email' => 'not-an-email', 'shipping_rate_id' => $this->rate->id])
         ->assertSessionHasErrors(['email', 'name', 'address_line1', 'city', 'country_code']);
 });
+
+it('keeps the order and the cart when the gateway is unreachable', function () {
+    app(CartService::class)->add($this->variant->id, 1);
+
+    $this->mock(\App\Domain\Payment\PaymentGateway::class, function ($mock) {
+        $mock->shouldReceive('createPayment')
+            ->andThrow(new RuntimeException('gateway timeout'));
+    });
+
+    $this->post('/checkout', checkoutPayload(['shipping_rate_id' => $this->rate->id]))
+        ->assertSessionHasErrors('payment');
+
+    // The order survives, unpaid and unreferenced, for the expiry job to reclaim.
+    $order = Order::first();
+    expect($order)->not->toBeNull()
+        ->and($order->status)->toBe(OrderStatus::PendingPayment)
+        ->and($order->payment_reference)->toBeNull();
+
+    // The customer's basket is untouched, so retrying costs them nothing.
+    expect(app(CartService::class)->snapshot()->isEmpty())->toBeFalse();
+});
