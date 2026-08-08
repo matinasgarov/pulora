@@ -16,6 +16,10 @@ class CartService
 
     public function add(int $variantId, int $quantity, array $personalization = []): void
     {
+        if ($quantity < 1) {
+            throw new InvalidQuantityException('Quantity must be at least 1.');
+        }
+
         $variant = Variant::with('product.personalizationOptions')->findOrFail($variantId);
         $clean = $this->validator->validate($variant->product, $personalization);
 
@@ -24,7 +28,7 @@ class CartService
 
         $lines[$lineKey] = [
             'variant_id' => $variantId,
-            'quantity' => ($lines[$lineKey]['quantity'] ?? 0) + max(1, $quantity),
+            'quantity' => ($lines[$lineKey]['quantity'] ?? 0) + $quantity,
             'personalization' => $clean,
         ];
 

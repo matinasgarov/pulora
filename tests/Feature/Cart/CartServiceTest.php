@@ -1,6 +1,7 @@
 <?php // tests/Feature/Cart/CartServiceTest.php
 
 use App\Domain\Cart\CartService;
+use App\Domain\Cart\InvalidQuantityException;
 use App\Domain\Catalog\Models\PersonalizationOption;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\Variant;
@@ -71,6 +72,16 @@ it('merges quantity for identical lines', function () {
 it('drops lines whose variant became inactive', function () {
     $this->cart->add($this->variant->id, 1);
     $this->variant->update(['is_active' => false]);
+
+    expect($this->cart->snapshot()->isEmpty())->toBeTrue();
+});
+
+it('rejects a quantity below one', function () {
+    expect(fn () => $this->cart->add($this->variant->id, 0))
+        ->toThrow(InvalidQuantityException::class, 'Quantity must be at least 1.');
+
+    expect(fn () => $this->cart->add($this->variant->id, -5))
+        ->toThrow(InvalidQuantityException::class);
 
     expect($this->cart->snapshot()->isEmpty())->toBeTrue();
 });
