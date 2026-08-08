@@ -38,8 +38,22 @@ class DiscountService
         return new DiscountResult($discount->id, $discount->code, min($amount, $subtotalMinor));
     }
 
-    public function consume(int $codeId): void
+    /**
+     * Increment usage, but only while the code remains under its limit.
+     *
+     * Returns false when the limit was already reached — the caller has taken
+     * payment by this point, so the order stands and the operator is alerted
+     * rather than the customer being refused.
+     */
+    public function consume(int $codeId): bool
     {
-        DiscountCode::where('id', $codeId)->increment('times_used');
+        $affected = DiscountCode::where('id', $codeId)
+            ->where(function ($query) {
+                $query->whereNull('usage_limit')
+                    ->orWhereColumn('times_used', '<', 'usage_limit');
+            })
+            ->increment('times_used');
+
+        return $affected > 0;
     }
 }

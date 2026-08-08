@@ -53,3 +53,24 @@ it('rejects a code that reached its usage limit', function () {
 it('rejects an unknown code', function () {
     $this->service->apply('NOPE', 10000);
 })->throws(InvalidDiscountException::class);
+
+it('increments usage and reports success while under the limit', function () {
+    $code = makeCode(['usage_limit' => 2, 'times_used' => 0]);
+
+    expect($this->service->consume($code->id))->toBeTrue();
+    expect($code->fresh()->times_used)->toBe(1);
+});
+
+it('always increments a code with no usage limit', function () {
+    $code = makeCode(['usage_limit' => null, 'times_used' => 500]);
+
+    expect($this->service->consume($code->id))->toBeTrue();
+    expect($code->fresh()->times_used)->toBe(501);
+});
+
+it('refuses to increment past the usage limit and reports failure', function () {
+    $code = makeCode(['usage_limit' => 2, 'times_used' => 2]);
+
+    expect($this->service->consume($code->id))->toBeFalse();
+    expect($code->fresh()->times_used)->toBe(2);
+});
