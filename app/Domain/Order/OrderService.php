@@ -6,15 +6,64 @@ use App\Domain\Cart\CartLine;
 use App\Domain\Cart\CartSnapshot;
 use App\Domain\Catalog\Models\Variant;
 use App\Domain\Discount\DiscountResult;
+use App\Domain\Discount\DiscountService;
 use App\Domain\Order\Models\Order;
 use App\Domain\Order\Models\OrderItem;
 use App\Domain\Shipping\ShippingQuote;
+use App\Mail\OrderConfirmation;
+use App\Mail\PaymentAnomaly;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class OrderService
 {
     public const RESERVATION_MINUTES = 30;
+
+    public function __construct(private DiscountService $discounts) {}
+
+    public function markPaid(Order $order, string $paymentReference): bool
+    {
+        $overRedeemedCode = false;
+
+        $transitioned = DB::transaction(function () use ($order, $paymentReference, &$overRedeemedCode) {
+            $locked = Order::whereKey($order->id)->lockForUpdate()->first();
+
+            if (! $locked || $locked->status !== OrderStatus::PendingPayment) {
+                return false;
+            }
+
+            $locked->update([
+                'status' => OrderStatus::Paid,
+                'payment_reference' => $paymentReference,
+                'paid_at' => now(),
+                'reserved_until' => null,
+            ]);
+
+            if ($locked->discount_code_id) {
+                // consume() is conditional: false means the code was already at its
+                // limit when a concurrent checkout beat us to the last use. Payment
+                // has already been taken, so the order stands and the operator is
+                // told — the customer is never punished for our race.
+                $overRedeemedCode = ! $this->discounts->consume($locked->discount_code_id);
+            }
+
+            return true;
+        });
+
+        if ($transitioned) {
+            Mail::to($order->customer_email)->send(new OrderConfirmation($order->fresh()));
+
+            if ($overRedeemedCode) {
+                Mail::to(config('shop.operator_email'))->send(new PaymentAnomaly(
+                    'Discount code redeemed past its usage limit',
+                    $order->order_number,
+                ));
+            }
+        }
+
+        return $transitioned;
+    }
 
     public function createFromCart(
         CartSnapshot $cart,
