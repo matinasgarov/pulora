@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'payment' => [
+        'driver' => env('PAYMENT_DRIVER', 'mock'),
+        'mock_secret' => env('PAYMENT_MOCK_SECRET', 'test-secret'),
+    ],
+
 ];
