@@ -2,9 +2,11 @@
 
 use App\Domain\Discount\Models\DiscountCode;
 use App\Domain\Order\Models\Order;
+use App\Domain\Order\MarkPaidOutcome;
 use App\Domain\Order\OrderService;
 use App\Domain\Order\OrderStatus;
 use App\Mail\OrderConfirmation;
+use App\Mail\PaymentAnomaly;
 use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
@@ -14,12 +16,12 @@ beforeEach(function () {
         'order_number' => 'LS-2026-PAID01', 'customer_email' => 'buyer@example.com',
         'customer_name' => 'Test Buyer', 'address_line1' => '1 Nizami St', 'city' => 'Baku',
         'country_code' => 'AZ', 'subtotal_minor' => 8900, 'shipping_minor' => 500,
-        'total_minor' => 9400, 'reserved_until' => now()->addMinutes(30),
+        'total_minor' => 9400, 'currency' => 'AZN', 'reserved_until' => now()->addMinutes(30),
     ]);
 });
 
 it('transitions the order to paid and clears the reservation', function () {
-    expect($this->orders->markPaid($this->order, 'REF-1'))->toBeTrue();
+    expect($this->orders->markPaid($this->order, 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::Transitioned);
 
     $fresh = $this->order->fresh();
     expect($fresh->status)->toBe(OrderStatus::Paid)
@@ -29,19 +31,19 @@ it('transitions the order to paid and clears the reservation', function () {
 });
 
 it('sends exactly one confirmation email', function () {
-    $this->orders->markPaid($this->order, 'REF-1');
+    $this->orders->markPaid($this->order, 'REF-1', 9400, 'AZN');
 
-    Mail::assertSentCount(1);
-    Mail::assertSent(OrderConfirmation::class,
+    Mail::assertQueuedCount(1);
+    Mail::assertQueued(OrderConfirmation::class,
         fn ($m) => $m->hasTo('buyer@example.com'));
 });
 
 it('is idempotent across repeated callbacks', function () {
-    expect($this->orders->markPaid($this->order, 'REF-1'))->toBeTrue();
-    expect($this->orders->markPaid($this->order->fresh(), 'REF-1'))->toBeFalse();
-    expect($this->orders->markPaid($this->order->fresh(), 'REF-1'))->toBeFalse();
+    expect($this->orders->markPaid($this->order, 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::Transitioned);
+    expect($this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::AlreadyPaid);
+    expect($this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::AlreadyPaid);
 
-    Mail::assertSentCount(1);
+    Mail::assertQueuedCount(1);
 });
 
 it('consumes the discount code exactly once', function () {
@@ -51,8 +53,8 @@ it('consumes the discount code exactly once', function () {
     ]);
     $this->order->update(['discount_code_id' => $code->id]);
 
-    $this->orders->markPaid($this->order->fresh(), 'REF-1');
-    $this->orders->markPaid($this->order->fresh(), 'REF-1');
+    $this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN');
+    $this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN');
 
     expect($code->fresh()->times_used)->toBe(1);
 });
@@ -60,7 +62,7 @@ it('consumes the discount code exactly once', function () {
 it('does not resurrect a cancelled order', function () {
     $this->order->update(['status' => OrderStatus::Cancelled]);
 
-    expect($this->orders->markPaid($this->order->fresh(), 'REF-1'))->toBeFalse();
+    expect($this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::NotPayable);
     expect($this->order->fresh()->status)->toBe(OrderStatus::Cancelled);
 });
 
@@ -71,9 +73,23 @@ it('alerts the operator when a discount code was over-redeemed', function () {
     ]);
     $this->order->update(['discount_code_id' => $code->id]);
 
-    expect($this->orders->markPaid($this->order->fresh(), 'REF-1'))->toBeTrue();
+    expect($this->orders->markPaid($this->order->fresh(), 'REF-1', 9400, 'AZN'))->toBe(MarkPaidOutcome::Transitioned);
 
-    Mail::assertSent(\App\Mail\PaymentAnomaly::class);
+    Mail::assertQueued(\App\Mail\PaymentAnomaly::class);
     expect($this->order->fresh()->status)->toBe(OrderStatus::Paid)
         ->and($code->fresh()->times_used)->toBe(1);
+});
+
+it('does not mark paid when the amount does not match the order total', function () {
+    expect($this->orders->markPaid($this->order, 'REF-1', 100, 'AZN'))->toBe(MarkPaidOutcome::AmountMismatch);
+
+    expect($this->order->fresh()->status)->toBe(OrderStatus::PendingPayment);
+    Mail::assertNotQueued(OrderConfirmation::class);
+});
+
+it('does not mark paid when the currency does not match', function () {
+    expect($this->orders->markPaid($this->order, 'REF-1', 9400, 'USD'))->toBe(MarkPaidOutcome::AmountMismatch);
+
+    expect($this->order->fresh()->status)->toBe(OrderStatus::PendingPayment);
+    Mail::assertNotQueued(OrderConfirmation::class);
 });

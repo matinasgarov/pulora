@@ -32,11 +32,21 @@ class MockGateway implements PaymentGateway
     {
         $reference = (string) $request->input('reference', '');
         $status = (string) $request->input('status', '');
-        $expected = hash_hmac('sha256', "{$reference}|{$status}", $this->secret);
+
+        $order = Order::where('payment_reference', $reference)->first();
+
+        $amountMinor = $request->has('amount_minor')
+            ? (int) $request->input('amount_minor')
+            : (int) ($order->total_minor ?? 0);
+        $currency = $request->has('currency')
+            ? (string) $request->input('currency')
+            : (string) ($order->currency ?? 'AZN');
+
+        $expected = hash_hmac('sha256', "{$reference}|{$status}|{$amountMinor}|{$currency}", $this->secret);
         $isValid = hash_equals($expected, (string) $request->input('signature', ''));
 
         PaymentLog::create([
-            'order_id' => Order::where('payment_reference', $reference)->value('id'),
+            'order_id' => $order?->id,
             'gateway' => 'mock',
             'direction' => 'callback',
             'reference' => $reference,
@@ -47,6 +57,8 @@ class MockGateway implements PaymentGateway
             isValid: $isValid,
             reference: $reference,
             isPaid: $isValid && $status === 'paid',
+            amountMinor: $amountMinor,
+            currency: $currency,
             raw: $request->all(),
         );
     }

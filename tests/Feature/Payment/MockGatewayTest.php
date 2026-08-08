@@ -11,7 +11,7 @@ beforeEach(function () {
         'order_number' => 'LS-2026-TEST01', 'customer_email' => 'buyer@example.com',
         'customer_name' => 'Test Buyer', 'address_line1' => '1 Nizami St', 'city' => 'Baku',
         'country_code' => 'AZ', 'subtotal_minor' => 8900, 'shipping_minor' => 500,
-        'total_minor' => 9400,
+        'total_minor' => 9400, 'currency' => 'AZN', 'payment_reference' => 'MOCK-LS-2026-TEST01',
     ]);
 });
 
@@ -38,12 +38,28 @@ it('accepts a correctly signed callback', function () {
     $result = $this->gateway->verifyCallback(Request::create('/callback', 'POST', [
         'reference' => 'MOCK-LS-2026-TEST01',
         'status' => 'paid',
-        'signature' => hash_hmac('sha256', 'MOCK-LS-2026-TEST01|paid', 'test-secret'),
+        'signature' => hash_hmac('sha256', 'MOCK-LS-2026-TEST01|paid|9400|AZN', 'test-secret'),
     ]));
 
     expect($result->isValid)->toBeTrue()
         ->and($result->isPaid)->toBeTrue()
-        ->and($result->reference)->toBe('MOCK-LS-2026-TEST01');
+        ->and($result->reference)->toBe('MOCK-LS-2026-TEST01')
+        ->and($result->amountMinor)->toBe(9400)
+        ->and($result->currency)->toBe('AZN');
+});
+
+it('accepts a callback with an explicit amount and currency', function () {
+    $result = $this->gateway->verifyCallback(Request::create('/callback', 'POST', [
+        'reference' => 'MOCK-LS-2026-TEST01',
+        'status' => 'paid',
+        'amount_minor' => 100,
+        'currency' => 'USD',
+        'signature' => hash_hmac('sha256', 'MOCK-LS-2026-TEST01|paid|100|USD', 'test-secret'),
+    ]));
+
+    expect($result->isValid)->toBeTrue()
+        ->and($result->amountMinor)->toBe(100)
+        ->and($result->currency)->toBe('USD');
 });
 
 it('rejects a callback with a bad signature', function () {

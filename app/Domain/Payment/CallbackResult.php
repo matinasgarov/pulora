@@ -8,6 +8,8 @@ final readonly class CallbackResult
         public bool $isValid,
         public string $reference,
         public bool $isPaid,
+        public int $amountMinor = 0,
+        public string $currency = 'AZN',
         public array $raw = [],
     ) {}
 }

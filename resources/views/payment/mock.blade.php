@@ -6,7 +6,9 @@
     @csrf
     <input type="hidden" name="reference" value="{{ $reference }}">
     <input type="hidden" name="status" value="paid">
+    <input type="hidden" name="amount_minor" value="{{ $amountMinor }}">
+    <input type="hidden" name="currency" value="{{ $currency }}">
     <input type="hidden" name="signature"
-           value="{{ hash_hmac('sha256', $reference . '|paid', config('services.payment.mock_secret')) }}">
+           value="{{ hash_hmac('sha256', $reference . '|paid|' . $amountMinor . '|' . $currency, config('services.payment.mock_secret')) }}">
     <button type="submit">Pay now</button>
 </form>

@@ -22,15 +22,31 @@ class OrderService
 
     public function __construct(private DiscountService $discounts) {}
 
-    public function markPaid(Order $order, string $paymentReference): bool
-    {
+    public function markPaid(
+        Order $order,
+        string $paymentReference,
+        int $paidAmountMinor,
+        string $paidCurrency,
+    ): MarkPaidOutcome {
         $overRedeemedCode = false;
 
-        $transitioned = DB::transaction(function () use ($order, $paymentReference, &$overRedeemedCode) {
+        $outcome = DB::transaction(function () use ($order, $paymentReference, $paidAmountMinor, $paidCurrency, &$overRedeemedCode) {
             $locked = Order::whereKey($order->id)->lockForUpdate()->first();
 
-            if (! $locked || $locked->status !== OrderStatus::PendingPayment) {
-                return false;
+            if (! $locked) {
+                return MarkPaidOutcome::NotPayable;
+            }
+
+            if ($locked->status === OrderStatus::Paid) {
+                return MarkPaidOutcome::AlreadyPaid;
+            }
+
+            if ($locked->status !== OrderStatus::PendingPayment) {
+                return MarkPaidOutcome::NotPayable;
+            }
+
+            if ($paidAmountMinor !== $locked->total_minor || $paidCurrency !== $locked->currency) {
+                return MarkPaidOutcome::AmountMismatch;
             }
 
             $locked->update([
@@ -48,21 +64,21 @@ class OrderService
                 $overRedeemedCode = ! $this->discounts->consume($locked->discount_code_id);
             }
 
-            return true;
+            return MarkPaidOutcome::Transitioned;
         });
 
-        if ($transitioned) {
-            Mail::to($order->customer_email)->send(new OrderConfirmation($order->fresh()));
+        if ($outcome === MarkPaidOutcome::Transitioned) {
+            Mail::to($order->customer_email)->queue(new OrderConfirmation($order->fresh()));
 
             if ($overRedeemedCode) {
-                Mail::to(config('shop.operator_email'))->send(new PaymentAnomaly(
+                Mail::to(config('shop.operator_email'))->queue(new PaymentAnomaly(
                     'Discount code redeemed past its usage limit',
                     $order->order_number,
                 ));
             }
         }
 
-        return $transitioned;
+        return $outcome;
     }
 
     public function createFromCart(

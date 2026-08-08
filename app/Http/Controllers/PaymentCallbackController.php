@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Order\MarkPaidOutcome;
 use App\Domain\Order\Models\Order;
 use App\Domain\Order\OrderService;
 use App\Domain\Payment\PaymentGateway;
@@ -28,7 +29,7 @@ class PaymentCallbackController extends Controller
                 'ip' => $request->ip(),
             ]);
 
-            Mail::to(config('shop.operator_email'))->send(
+            Mail::to(config('shop.operator_email'))->queue(
                 new PaymentAnomaly('Invalid callback signature', $result->reference, $request->ip())
             );
 
@@ -40,7 +41,7 @@ class PaymentCallbackController extends Controller
         if (! $order) {
             Log::warning('Payment callback for unknown reference', ['reference' => $result->reference]);
 
-            Mail::to(config('shop.operator_email'))->send(
+            Mail::to(config('shop.operator_email'))->queue(
                 new PaymentAnomaly('Callback for unknown reference', $result->reference, $request->ip())
             );
 
@@ -48,7 +49,42 @@ class PaymentCallbackController extends Controller
         }
 
         if ($result->isPaid) {
-            $this->orders->markPaid($order, $result->reference);
+            $outcome = $this->orders->markPaid(
+                $order,
+                $result->reference,
+                $result->amountMinor,
+                $result->currency,
+            );
+
+            if ($outcome === MarkPaidOutcome::NotPayable) {
+                Log::warning('Payment received for an order that is no longer payable', [
+                    'reference' => $result->reference,
+                    'order_number' => $order->order_number,
+                    'ip' => $request->ip(),
+                ]);
+
+                Mail::to(config('shop.operator_email'))->queue(new PaymentAnomaly(
+                    'Payment received for an order that is no longer payable — refund required',
+                    $order->order_number,
+                    $request->ip(),
+                ));
+            }
+
+            if ($outcome === MarkPaidOutcome::AmountMismatch) {
+                Log::warning('Payment callback amount does not match order total', [
+                    'reference' => $result->reference,
+                    'order_number' => $order->order_number,
+                    'paid_amount_minor' => $result->amountMinor,
+                    'paid_currency' => $result->currency,
+                    'ip' => $request->ip(),
+                ]);
+
+                Mail::to(config('shop.operator_email'))->queue(new PaymentAnomaly(
+                    'Payment amount does not match order total — refund required',
+                    $order->order_number,
+                    $request->ip(),
+                ));
+            }
         }
 
         return response('ok', 200);
