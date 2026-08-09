@@ -848,7 +848,7 @@ git commit -m "feat: add Filament admin panel with operator-only access"
 
 **Interfaces:**
 - Consumes: `Product`, `Variant`, `ProductImage`, `VariantOption`, `PersonalizationOption` models from Plan 1; the panel from Task 2.
-- Produces: `App\Support\MoneyInput::toMinor(?string $manats): ?int` and `MoneyInput::toManats(?int $minor): ?string`, used by Task 4's shipping and discount forms.
+- Produces: `App\Support\MoneyInput::toMinor(?string $manats): ?int`, `MoneyInput::toManats(?int $minor): ?string`, and `MoneyInput::field(string $name): TextInput` — a pre-configured price input. **Every money field in the panel is built from `field()`**; the conversion closures are written once, in `MoneyInput`, and nowhere else. Task 4's shipping-rate and discount forms use it too.
 
 - [ ] **Step 1: Write the failing money conversion test**
 
@@ -893,6 +893,13 @@ it('round-trips every value without drift', function () {
     foreach ([1, 99, 100, 4999, 10000, 123456, 999999] as $minor) {
         expect(MoneyInput::toMinor(MoneyInput::toManats($minor)))->toBe($minor);
     }
+});
+
+it('builds a price field carrying the conversion', function () {
+    $field = MoneyInput::field('base_price_minor');
+
+    expect($field)->toBeInstanceOf(\Filament\Forms\Components\TextInput::class)
+        ->and($field->getName())->toBe('base_price_minor');
 });
 ```
 
@@ -943,8 +950,23 @@ final class MoneyInput
 
         return number_format($minor / 100, 2, '.', '');
     }
+
+    /**
+     * A price field, configured once. Every money input in the panel is built
+     * from this so the conversion rule lives in exactly one place.
+     */
+    public static function field(string $name): TextInput
+    {
+        return TextInput::make($name)
+            ->prefix('AZN')
+            ->rule('regex:/^\d+([.,]\d{1,2})?$/')
+            ->formatStateUsing(fn (?int $state) => self::toManats($state))
+            ->dehydrateStateUsing(fn (?string $state) => self::toMinor($state));
+    }
 }
 ```
+
+Add `use Filament\Forms\Components\TextInput;` to the imports.
 
 - [ ] **Step 4: Run it to verify it passes**
 
@@ -1080,13 +1102,9 @@ Expected: FAIL — the generated form has no money conversion and no slug lock.
                     Textarea::make('description')->rows(4),
                     Textarea::make('story')->rows(4),
 
-                    TextInput::make('base_price_minor')
+                    MoneyInput::field('base_price_minor')
                         ->label('Price')
-                        ->prefix('AZN')
-                        ->required()
-                        ->rule('regex:/^\d+([.,]\d{1,2})?$/')
-                        ->formatStateUsing(fn (?int $state) => MoneyInput::toManats($state))
-                        ->dehydrateStateUsing(fn (?string $state) => MoneyInput::toMinor($state)),
+                        ->required(),
 
                     TextInput::make('lead_time_days')->numeric()->minValue(0)->default(3),
                     Toggle::make('is_active')->default(true),
@@ -1128,10 +1146,9 @@ Expected: FAIL — the generated form has no money conversion and no slug lock.
                                 'custom_stamp' => 'Custom stamp',
                             ])->required(),
                             TextInput::make('label')->required(),
-                            TextInput::make('price_delta_minor')
+                            MoneyInput::field('price_delta_minor')
                                 ->label('Extra charge')
-                                ->prefix('AZN')
-                                ->formatStateUsing(fn (?int $state) => MoneyInput::toManats($state ?? 0))
+                                ->default(0)
                                 ->dehydrateStateUsing(fn (?string $state) => MoneyInput::toMinor($state) ?? 0),
                             TextInput::make('max_characters')->numeric()->default(3),
                             TextInput::make('allowed_pattern')->default('/^[A-Z]+$/'),
@@ -1208,13 +1225,9 @@ The form for creating and editing a variant:
         return $schema->components([
             TextInput::make('sku')->required()->unique(ignoreRecord: true),
             TextInput::make('description')->placeholder('Cognac / natural thread'),
-            TextInput::make('price_minor_override')
+            MoneyInput::field('price_minor_override')
                 ->label('Price override')
-                ->prefix('AZN')
-                ->helperText('Leave blank to use the product price.')
-                ->rule('regex:/^\d+([.,]\d{1,2})?$/')
-                ->formatStateUsing(fn (?int $state) => MoneyInput::toManats($state))
-                ->dehydrateStateUsing(fn (?string $state) => MoneyInput::toMinor($state)),
+                ->helperText('Leave blank to use the product price.'),
             TextInput::make('stock_quantity')
                 ->label('Capacity')
                 ->helperText('How many of this you are willing to commit to. This is not shelf stock — every piece is made to order.')
@@ -1711,13 +1724,9 @@ Expected: FAIL — the resources do not exist.
             TextInput::make('name')->required()->placeholder('Standard'),
             TextInput::make('min_weight_grams')->numeric()->minValue(0)->default(0)->required(),
             TextInput::make('max_weight_grams')->numeric()->minValue(1)->required(),
-            TextInput::make('price_minor')
+            MoneyInput::field('price_minor')
                 ->label('Price')
-                ->prefix('AZN')
-                ->required()
-                ->rule('regex:/^\d+([.,]\d{1,2})?$/')
-                ->formatStateUsing(fn (?int $state) => MoneyInput::toManats($state))
-                ->dehydrateStateUsing(fn (?string $state) => MoneyInput::toMinor($state)),
+                ->required(),
         ]);
     }
 
@@ -1773,12 +1782,9 @@ Expected: FAIL — the resources do not exist.
                     ? MoneyInput::toMinor($state)
                     : (int) $state),
 
-            TextInput::make('minimum_order_minor')
+            MoneyInput::field('minimum_order_minor')
                 ->label('Minimum order')
-                ->prefix('AZN')
                 ->default(0)
-                ->rule('regex:/^\d+([.,]\d{1,2})?$/')
-                ->formatStateUsing(fn (?int $state) => MoneyInput::toManats($state ?? 0))
                 ->dehydrateStateUsing(fn (?string $state) => MoneyInput::toMinor($state) ?? 0),
 
             TextInput::make('usage_limit')
