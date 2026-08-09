@@ -109,12 +109,15 @@ not shelf inventory. The mechanics are unchanged; only the meaning is.
 
 ### 4.5 Schema changes
 
-`orders` gains:
+`orders` **already has** `tracking_number` and `shipped_at` — both were created by
+Plan 1's `create_order_tables` migration, and `shipped_at` is already cast on the
+`Order` model. Nothing written them yet; `transition()` is what finally populates
+them.
+
+`orders` gains exactly one column:
 
 | Column | Type | Notes |
 |---|---|---|
-| `tracking_number` | string, nullable | set on `shipped` |
-| `shipped_at` | timestamp, nullable | set on `shipped` |
 | `ready_at` | timestamp, nullable | set by the "Mark made" action (§5.1); not a status change |
 
 New `order_events` table:
