@@ -76,9 +76,10 @@ without writing the row.
 | `cancelled` | *(terminal)* |
 | `refunded` | *(terminal)* |
 
-`pending_payment` and `paid` are **not admin-settable in either direction**.
-Only the payment callback may create `paid`; only `ReleaseExpiredReservations`
-may retire an unpaid order. Admin-settable `paid` would put a UI-shaped hole in
+**No admin action may set an order *to* `paid` or *to* `pending_payment`** —
+neither appears in the `To` column above. Only the payment callback may create
+`paid`; only `ReleaseExpiredReservations` may retire an unpaid order. Moving
+*out of* `paid` is the admin's job and is what the first row permits. Admin-settable `paid` would put a UI-shaped hole in
 Plan 1's rule that only the server-to-server callback is trusted.
 
 ### 4.3 Stock consequences
