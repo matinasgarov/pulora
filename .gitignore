@@ -44,3 +44,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Native worktrees created by the harness
+/.claude/worktrees
