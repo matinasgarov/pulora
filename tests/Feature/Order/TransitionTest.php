@@ -109,6 +109,23 @@ it('records a payment log when refunding', function () {
         ->and($log->payload['amount_minor'])->toBe($this->order->total_minor);
 });
 
+it('does not refund a second time when the order is already refunded', function () {
+    $this->mock(PaymentGateway::class, function ($mock) {
+        $mock->shouldReceive('refund')->once()
+            ->andReturn(new RefundResult(succeeded: true, reference: 'REF-1'));
+    });
+
+    $this->orders->transition($this->order, OrderStatus::Refunded);
+
+    // The mock's ->once() means a second real call to refund() here would fail
+    // the test on its own; we also assert directly that only one refund log
+    // was ever written, since that's the operator-facing evidence of the bug.
+    expect(fn () => $this->orders->transition($this->order, OrderStatus::Refunded))
+        ->toThrow(IllegalTransitionException::class);
+
+    expect(PaymentLog::where('order_id', $this->order->id)->where('direction', 'refund')->count())->toBe(1);
+});
+
 it('leaves the order unchanged when the gateway refuses the refund', function () {
     $this->mock(PaymentGateway::class, function ($mock) {
         $mock->shouldReceive('refund')->once()
@@ -153,6 +170,13 @@ it('marks an order ready without changing its status', function () {
 
     expect($fresh->ready_at)->not->toBeNull()
         ->and($fresh->status)->toBe(OrderStatus::InProduction);
+});
+
+it('refuses to mark a cancelled order ready', function () {
+    $this->orders->transition($this->order, OrderStatus::Cancelled);
+
+    expect(fn () => $this->orders->markReady($this->order))
+        ->toThrow(IllegalTransitionException::class);
 });
 
 it('does not restore capacity twice if cancel is somehow called again', function () {

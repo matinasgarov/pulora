@@ -163,6 +163,15 @@ class OrderService
             throw new InvalidArgumentException('A tracking number is required to mark an order shipped.');
         }
 
+        // Pre-flight legality check, ahead of the (possibly money-moving) gateway
+        // call below. This is not the source of truth — the locked re-check inside
+        // the transaction is — but without it a refund on an already-refunded order
+        // would hit the gateway and log a second real refund before the illegal
+        // transition is ever detected.
+        if (! $order->status->canTransitionTo($to)) {
+            throw IllegalTransitionException::between($order->status, $to);
+        }
+
         // The gateway call happens outside the transaction: a refund that
         // succeeds at the bank but fails locally is recoverable, whereas a
         // transaction held open across a network call is not.
@@ -218,17 +227,31 @@ class OrderService
             ]);
         });
 
+        // The passed-in $order instance still holds pre-transaction attributes
+        // (Eloquent doesn't mutate the caller's copy from inside the closure).
+        // Refresh it so callers who hold onto $order — Filament actions among
+        // them — see the new status without having to know to call fresh().
+        $order->refresh();
+
         if ($to === OrderStatus::Shipped) {
-            Mail::to($order->customer_email)->queue(new ShipmentNotification($order->fresh()));
+            Mail::to($order->customer_email)->queue(new ShipmentNotification($order));
         }
     }
 
     /**
      * "Made, not yet posted." A workshop bookkeeping mark, not a status change —
      * the domain transition to Shipped still happens once, at the post office.
+     * Deliberately does not write an OrderEvent: this is bookkeeping, not a
+     * status transition, so it is omitted from the audit trail by design.
      */
     public function markReady(Order $order): void
     {
+        if (! in_array($order->status, [OrderStatus::Paid, OrderStatus::InProduction], true)) {
+            throw new IllegalTransitionException(
+                "An order in status {$order->status->label()} cannot be marked ready."
+            );
+        }
+
         $order->update(['ready_at' => now()]);
     }
 
