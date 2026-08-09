@@ -18,10 +18,7 @@ return new class extends Migration {
             $t->string('from_status');
             $t->string('to_status');
             $t->text('note')->nullable();
-            // Not a foreign key: the audit trail must survive independently of
-            // the users table (deleted operators, synthetic ids in tests), and
-            // TransitionTest exercises userId with no corresponding user row.
-            $t->unsignedBigInteger('user_id')->nullable();
+            $t->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $t->timestamp('created_at')->useCurrent();
         });
     }

@@ -20,6 +20,7 @@ beforeEach(function () {
 
     $this->product = Product::factory()->create();
     $this->variant = Variant::factory()->for($this->product)->create(['stock_quantity' => 7]);
+    $this->operator = App\Models\User::factory()->create();
 
     $this->order = Order::factory()->create([
         'status' => OrderStatus::Paid,
@@ -39,14 +40,24 @@ it('moves a paid order into production', function () {
 });
 
 it('records an order event with the from and to statuses and the acting user', function () {
-    $this->orders->transition($this->order, OrderStatus::InProduction, 'Cutting today', userId: 42);
+    $this->orders->transition($this->order, OrderStatus::InProduction, 'Cutting today', userId: $this->operator->id);
 
     $event = OrderEvent::where('order_id', $this->order->id)->sole();
 
     expect($event->from_status)->toBe('paid')
         ->and($event->to_status)->toBe('in_production')
         ->and($event->note)->toBe('Cutting today')
-        ->and($event->user_id)->toBe(42);
+        ->and($event->user_id)->toBe($this->operator->id);
+});
+
+it('refuses to record an event for a user that does not exist', function () {
+    expect(fn () => App\Domain\Order\Models\OrderEvent::create([
+        'order_id' => $this->order->id,
+        'from_status' => 'paid',
+        'to_status' => 'in_production',
+        'user_id' => 999999,
+        'created_at' => now(),
+    ]))->toThrow(Illuminate\Database\QueryException::class);
 });
 
 it('rejects an illegal transition without writing the row', function () {
