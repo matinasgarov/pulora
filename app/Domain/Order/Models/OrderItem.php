@@ -2,10 +2,13 @@
 
 namespace App\Domain\Order\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
+    use HasFactory;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -15,4 +18,11 @@ class OrderItem extends Model
         'line_total_minor' => 'integer',
         'weight_grams' => 'integer',
     ];
+
+    public function order() { return $this->belongsTo(Order::class); }
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\OrderItemFactory::new();
+    }
 }

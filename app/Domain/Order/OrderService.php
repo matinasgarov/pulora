@@ -8,13 +8,19 @@ use App\Domain\Catalog\Models\Variant;
 use App\Domain\Discount\DiscountResult;
 use App\Domain\Discount\DiscountService;
 use App\Domain\Order\Models\Order;
+use App\Domain\Order\Models\OrderEvent;
 use App\Domain\Order\Models\OrderItem;
+use App\Domain\Payment\Models\PaymentLog;
+use App\Domain\Payment\PaymentGateway;
 use App\Domain\Shipping\ShippingQuote;
 use App\Mail\OrderConfirmation;
 use App\Mail\PaymentAnomaly;
+use App\Mail\ShipmentNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
 
 class OrderService
 {
@@ -139,6 +145,104 @@ class OrderService
 
             return $order->load('items');
         });
+    }
+
+    /**
+     * The single guarded entry point for every operator-driven status change.
+     * Nothing else in the application may write orders.status.
+     */
+    public function transition(
+        Order $order,
+        OrderStatus $to,
+        ?string $note = null,
+        ?int $userId = null,
+        bool $restoreCapacity = false,
+        ?string $trackingNumber = null,
+    ): void {
+        if ($to === OrderStatus::Shipped && blank($trackingNumber)) {
+            throw new InvalidArgumentException('A tracking number is required to mark an order shipped.');
+        }
+
+        // The gateway call happens outside the transaction: a refund that
+        // succeeds at the bank but fails locally is recoverable, whereas a
+        // transaction held open across a network call is not.
+        $refund = null;
+
+        if ($to === OrderStatus::Refunded) {
+            $refund = app(PaymentGateway::class)->refund($order, $order->total_minor);
+
+            PaymentLog::create([
+                'order_id' => $order->id,
+                'gateway' => class_basename(app(PaymentGateway::class)),
+                'direction' => 'refund',
+                'reference' => $refund->reference,
+                'payload' => ['succeeded' => $refund->succeeded, 'amount_minor' => $order->total_minor],
+            ]);
+
+            if (! $refund->succeeded) {
+                throw new RuntimeException(
+                    "The payment provider refused the refund (reference {$refund->reference}). The order is unchanged."
+                );
+            }
+        }
+
+        DB::transaction(function () use ($order, $to, $note, $userId, $restoreCapacity, $trackingNumber) {
+            $locked = Order::whereKey($order->id)->lockForUpdate()->first();
+
+            if (! $locked || ! $locked->status->canTransitionTo($to)) {
+                throw IllegalTransitionException::between($locked?->status ?? $order->status, $to);
+            }
+
+            $from = $locked->status;
+
+            $attributes = ['status' => $to];
+
+            if ($to === OrderStatus::Shipped) {
+                $attributes['tracking_number'] = $trackingNumber;
+                $attributes['shipped_at'] = now();
+            }
+
+            $locked->update($attributes);
+
+            if ($to === OrderStatus::Cancelled || ($to === OrderStatus::Refunded && $restoreCapacity)) {
+                $this->restoreCapacity($locked);
+            }
+
+            OrderEvent::create([
+                'order_id' => $locked->id,
+                'from_status' => $from->value,
+                'to_status' => $to->value,
+                'note' => $note,
+                'user_id' => $userId,
+                'created_at' => now(),
+            ]);
+        });
+
+        if ($to === OrderStatus::Shipped) {
+            Mail::to($order->customer_email)->queue(new ShipmentNotification($order->fresh()));
+        }
+    }
+
+    /**
+     * "Made, not yet posted." A workshop bookkeeping mark, not a status change —
+     * the domain transition to Shipped still happens once, at the post office.
+     */
+    public function markReady(Order $order): void
+    {
+        $order->update(['ready_at' => now()]);
+    }
+
+    private function restoreCapacity(Order $order): void
+    {
+        foreach ($order->items as $item) {
+            if (! $item->variant_id) {
+                continue;
+            }
+
+            $variant = Variant::whereKey($item->variant_id)->lockForUpdate()->first();
+
+            $variant?->increment('stock_quantity', $item->quantity);
+        }
     }
 
     private function reserveStock(CartLine $line): void
