@@ -149,7 +149,9 @@ The smallest piece of the system and the one every other task depends on. Doing 
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: `Money::format(int $minor, string $currency = 'AZN'): string`, `Money::percentOf(int $minor, float $percent): int`
+- Produces: `Money::format(int $minor, string $currency = 'AZN'): string`, `Money::percentOf(int $minor, int $percent): int`
+
+  `$percent` is an **integer**, matching `discount_codes.value` (`unsignedInteger`) in Task 7. The arithmetic is exact integer math — a float parameter with float division misrounds at half-boundaries (`percentOf(375, 9.2)` yields 34 where half-up requires 35) and only ever served as a trap.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -170,6 +172,12 @@ it('rounds percentages half up to whole minor units', function () {
     expect(Money::percentOf(333, 10))->toBe(33);
     // 335 * 10% = 33.5 -> half up -> 34
     expect(Money::percentOf(335, 10))->toBe(34);
+});
+
+it('rounds exact half-boundaries up using integer arithmetic', function () {
+    expect(Money::percentOf(110, 5))->toBe(6);    // 550 -> 5.5 -> 6
+    expect(Money::percentOf(350, 1))->toBe(4);    // 350 -> 3.5 -> 4
+    expect(Money::percentOf(349, 1))->toBe(3);    // 349 -> 3.49 -> 3
 });
 ```
 
@@ -194,9 +202,11 @@ final class Money
         return number_format($minor / 100, 2, '.', '') . ' ' . $currency;
     }
 
-    public static function percentOf(int $minor, float $percent): int
+    public static function percentOf(int $minor, int $percent): int
     {
-        return (int) round($minor * $percent / 100, 0, PHP_ROUND_HALF_UP);
+        $numerator = $minor * $percent;
+
+        return intdiv($numerator, 100) + (($numerator % 100) >= 50 ? 1 : 0);
     }
 }
 ```
@@ -924,6 +934,10 @@ class CartService
 
     public function add(int $variantId, int $quantity, array $personalization = []): void
     {
+        if ($quantity < 1) {
+            throw new InvalidQuantityException('Quantity must be at least 1.');
+        }
+
         $variant = Variant::with('product.personalizationOptions')->findOrFail($variantId);
         $clean = $this->validator->validate($variant->product, $personalization);
 
@@ -932,7 +946,7 @@ class CartService
 
         $lines[$lineKey] = [
             'variant_id' => $variantId,
-            'quantity' => ($lines[$lineKey]['quantity'] ?? 0) + max(1, $quantity),
+            'quantity' => ($lines[$lineKey]['quantity'] ?? 0) + $quantity,
             'personalization' => $clean,
         ];
 
@@ -1282,7 +1296,7 @@ git commit -m "feat: add zone and weight-bracket shipping calculator"
 - Produces:
   - `DiscountResult` — readonly: `int $codeId`, `string $code`, `int $amountMinor`
   - `DiscountService::apply(string $code, int $subtotalMinor): DiscountResult` — throws `InvalidDiscountException`
-  - `DiscountService::consume(int $codeId): void` — increments `times_used`, called inside the `markPaid` transaction in Task 11
+  - `DiscountService::consume(int $codeId): bool` — increments `times_used` **only while the code is under its limit**, in one atomic statement; returns `false` if the limit was already reached. Called inside the `markPaid` transaction in Task 11, which alerts the operator on `false`.
 
 - [ ] **Step 1: Write the migration**
 
@@ -1472,9 +1486,23 @@ class DiscountService
         return new DiscountResult($discount->id, $discount->code, min($amount, $subtotalMinor));
     }
 
-    public function consume(int $codeId): void
+    /**
+     * Increment usage, but only while the code remains under its limit.
+     *
+     * Returns false when the limit was already reached. The caller has taken
+     * payment by this point, so the order stands and the operator is alerted
+     * rather than the customer being refused.
+     */
+    public function consume(int $codeId): bool
     {
-        DiscountCode::where('id', $codeId)->increment('times_used');
+        $affected = DiscountCode::where('id', $codeId)
+            ->where(function ($query) {
+                $query->whereNull('usage_limit')
+                    ->orWhereColumn('times_used', '<', 'usage_limit');
+            })
+            ->increment('times_used');
+
+        return $affected > 0;
     }
 }
 ```
@@ -1769,8 +1797,11 @@ use App\Domain\Catalog\Models\Variant;
 use App\Domain\Discount\DiscountResult;
 use App\Domain\Order\CustomerDetails;
 use App\Domain\Order\InsufficientStockException;
+use App\Domain\Discount\Models\DiscountCode;
 use App\Domain\Order\OrderService;
 use App\Domain\Order\OrderStatus;
+use App\Domain\Shipping\Models\ShippingRate;
+use App\Domain\Shipping\Models\ShippingZone;
 use App\Domain\Shipping\ShippingQuote;
 
 beforeEach(function () {
@@ -1785,7 +1816,19 @@ beforeEach(function () {
         addressLine1: '1 Nizami St', addressLine2: null, city: 'Baku',
         postcode: 'AZ1000', countryCode: 'AZ', phone: null,
     );
-    $this->shipping = new ShippingQuote(rateId: 1, name: 'Standard', priceMinor: 500);
+
+    // orders.shipping_rate_id is a real foreign key, so the rate must exist.
+    // Use the auto-assigned id rather than forcing 1 — forcing primary keys is
+    // brittle and hides ordering bugs.
+    $zone = ShippingZone::create([
+        'name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true,
+    ]);
+    $rate = ShippingRate::create([
+        'shipping_zone_id' => $zone->id, 'name' => 'Standard',
+        'min_weight_grams' => 0, 'max_weight_grams' => 3000, 'price_minor' => 500,
+    ]);
+
+    $this->shipping = new ShippingQuote(rateId: $rate->id, name: 'Standard', priceMinor: 500);
 });
 
 it('creates a pending order with correct totals', function () {
@@ -2355,10 +2398,12 @@ The single most important behaviour in the system. Gateways retry callbacks; dup
 **Files:**
 - Modify: `app/Domain/Order/OrderService.php`
 - Create: `app/Mail/OrderConfirmation.php`, `resources/views/mail/order-confirmation.blade.php`
+- Create: `app/Mail/PaymentAnomaly.php`, `resources/views/mail/payment-anomaly.blade.php`, `config/shop.php`
+  (operator-alert plumbing — first needed here for the over-redeemed-discount alert; Task 13 reuses it)
 - Test: `tests/Feature/Order/MarkPaidTest.php`
 
 **Interfaces:**
-- Consumes: `Order`, `OrderStatus`, `DiscountService::consume()` (Task 7)
+- Consumes: `Order`, `OrderStatus`, `DiscountService::consume(): bool` (Task 7)
 - Produces: `OrderService::markPaid(Order $order, string $paymentReference): bool` — returns `true` if this call transitioned the order, `false` if it was already paid
 
 - [ ] **Step 1: Write the failing test**
@@ -2507,6 +2552,7 @@ Add these imports to `OrderService.php`:
 ```php
 use App\Domain\Discount\DiscountService;
 use App\Mail\OrderConfirmation;
+use App\Mail\PaymentAnomaly;
 use Illuminate\Support\Facades\Mail;
 ```
 
@@ -2517,7 +2563,9 @@ public function __construct(private DiscountService $discounts) {}
 
 public function markPaid(Order $order, string $paymentReference): bool
 {
-    $transitioned = DB::transaction(function () use ($order, $paymentReference) {
+    $overRedeemedCode = false;
+
+    $transitioned = DB::transaction(function () use ($order, $paymentReference, &$overRedeemedCode) {
         $locked = Order::whereKey($order->id)->lockForUpdate()->first();
 
         if (! $locked || $locked->status !== OrderStatus::PendingPayment) {
@@ -2532,7 +2580,11 @@ public function markPaid(Order $order, string $paymentReference): bool
         ]);
 
         if ($locked->discount_code_id) {
-            $this->discounts->consume($locked->discount_code_id);
+            // consume() is conditional: false means the code was already at its
+            // limit when a concurrent checkout beat us to the last use. Payment
+            // has already been taken, so the order stands and the operator is
+            // told — the customer is never punished for our race.
+            $overRedeemedCode = ! $this->discounts->consume($locked->discount_code_id);
         }
 
         return true;
@@ -2540,6 +2592,13 @@ public function markPaid(Order $order, string $paymentReference): bool
 
     if ($transitioned) {
         Mail::to($order->customer_email)->send(new OrderConfirmation($order->fresh()));
+
+        if ($overRedeemedCode) {
+            Mail::to(config('shop.operator_email'))->send(new PaymentAnomaly(
+                'Discount code redeemed past its usage limit',
+                $order->order_number,
+            ));
+        }
     }
 
     return $transitioned;
@@ -2906,13 +2965,15 @@ it('leaves the order untouched on a forged signature', function () {
     ])->assertStatus(400);
 
     expect($this->order->fresh()->status)->toBe(OrderStatus::PendingPayment);
-    Mail::assertNothingSent();
+
+    // The operator IS alerted here (see Step 4); the customer is not.
+    Mail::assertNotSent(OrderConfirmation::class);
 });
 
 it('ignores a callback for an unknown reference', function () {
     $this->post('/payment/callback', signedCallback('MOCK-DOES-NOT-EXIST'))->assertStatus(404);
 
-    Mail::assertNothingSent();
+    Mail::assertNotSent(OrderConfirmation::class);
 });
 
 it('does not mark paid when the gateway reports failure', function () {
@@ -2999,6 +3060,8 @@ it('emails the operator when a callback signature is forged', function () {
         fn ($m) => $m->hasTo('owner@example.com'));
 });
 ```
+
+**Note:** `config/shop.php`, `app/Mail/PaymentAnomaly.php`, and the anomaly Blade view were already created in Task 11 for the over-redeemed-discount alert. If they exist, reuse them unchanged and skip their creation below — this task only adds the two callback alert sites.
 
 Create `config/shop.php`:
 
@@ -3338,6 +3401,8 @@ use App\Domain\Catalog\Models\Variant;
 use App\Domain\Order\CustomerDetails;
 use App\Domain\Order\InsufficientStockException;
 use App\Domain\Order\OrderService;
+use App\Domain\Shipping\Models\ShippingRate;
+use App\Domain\Shipping\Models\ShippingZone;
 use App\Domain\Shipping\ShippingQuote;
 
 // This test is meaningless on SQLite, where lockForUpdate() is a silent no-op.
@@ -3347,7 +3412,9 @@ beforeEach(function () {
     }
 });
 
-it('never lets two orders take the same last unit', function () {
+// Named for what it actually verifies: the stock check lives inside the locked
+// transaction. It does not spawn parallel processes — see the note below.
+it('checks stock inside the locked transaction so the second order is refused', function () {
     $product = Product::factory()->create(['base_price_minor' => 8900]);
     $variant = Variant::factory()->for($product)->create(['stock_quantity' => 1, 'weight_grams' => 120]);
 
@@ -3355,7 +3422,19 @@ it('never lets two orders take the same last unit', function () {
         email: 'buyer@example.com', name: 'Buyer', addressLine1: '1 St',
         addressLine2: null, city: 'Baku', postcode: null, countryCode: 'AZ', phone: null,
     );
-    $shipping = new ShippingQuote(rateId: 1, name: 'Standard', priceMinor: 500);
+
+    // orders.shipping_rate_id is a real foreign key — the rate must exist, and
+    // its auto-assigned id must be used. A bare ShippingQuote(rateId: 1) fails
+    // with "FOREIGN KEY constraint failed" (this bit Task 9 before it was fixed).
+    $zone = ShippingZone::create([
+        'name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true,
+    ]);
+    $rate = ShippingRate::create([
+        'shipping_zone_id' => $zone->id, 'name' => 'Standard',
+        'min_weight_grams' => 0, 'max_weight_grams' => 3000, 'price_minor' => 500,
+    ]);
+
+    $shipping = new ShippingQuote(rateId: $rate->id, name: 'Standard', priceMinor: 500);
 
     $snapshot = new CartSnapshot([new CartLine(
         lineKey: 'k', variantId: $variant->id, quantity: 1,
