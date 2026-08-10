@@ -3,6 +3,7 @@
 namespace App\Domain\Order\Models;
 
 use App\Domain\Order\OrderStatus;
+use App\Domain\Payment\Models\PaymentLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,6 +29,7 @@ class Order extends Model
 
     public function items() { return $this->hasMany(OrderItem::class); }
     public function events() { return $this->hasMany(OrderEvent::class)->orderBy('created_at'); }
+    public function paymentLogs() { return $this->hasMany(PaymentLog::class)->latest('created_at'); }
 
     protected static function newFactory()
     {
