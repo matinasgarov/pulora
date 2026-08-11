@@ -25,7 +25,7 @@ class TransitionActions
         return Action::make('start_production')
             ->label('Start making')
             ->icon('heroicon-o-play')
-            ->visible(fn (Order $record) => $record->status->canTransitionTo(OrderStatus::InProduction))
+            ->visible(fn (?Order $record) => $record?->status->canTransitionTo(OrderStatus::InProduction) ?? false)
             ->action(fn (Order $record) => static::run($record, OrderStatus::InProduction));
     }
 
@@ -34,7 +34,7 @@ class TransitionActions
         return Action::make('mark_ready')
             ->label('Mark made')
             ->icon('heroicon-o-check')
-            ->visible(fn (Order $record) => $record->status === OrderStatus::InProduction && $record->ready_at === null)
+            ->visible(fn (?Order $record) => $record && $record->status === OrderStatus::InProduction && $record->ready_at === null)
             ->action(function (Order $record) {
                 app(OrderService::class)->markReady($record);
 
@@ -47,7 +47,7 @@ class TransitionActions
         return Action::make('ship')
             ->label('Mark posted')
             ->icon('heroicon-o-truck')
-            ->visible(fn (Order $record) => $record->status->canTransitionTo(OrderStatus::Shipped))
+            ->visible(fn (?Order $record) => $record?->status->canTransitionTo(OrderStatus::Shipped) ?? false)
             ->schema([
                 TextInput::make('tracking_number')->required()->label('Tracking number'),
             ])
