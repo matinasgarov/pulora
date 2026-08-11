@@ -5,8 +5,10 @@ use App\Http\Controllers\CheckoutConfirmationController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderLookupController;
 use App\Http\Controllers\PaymentCallbackController;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,13 +45,48 @@ Route::post('/orders/lookup', [OrderLookupController::class, 'find'])
 // is a plain HTTP fallback so that direct POSTs to /admin/login — the kind a
 // scripted brute-force attempt would send — are rate limited and logged,
 // independent of Filament's own Livewire-level throttling.
+//
+// IMPORTANT — this is a *secondary*, narrower defense, not the primary one:
+// the real login form submits through Livewire's shared /livewire/update
+// endpoint, not this route, so a real attacker using the actual admin UI
+// never touches the throttle below. Filament's Login page already ships its
+// own independent rate limiter (WithRateLimiting trait in
+// vendor/filament/filament/src/Auth/Pages/Login.php) that is what actually
+// protects the real UI today, and this route does not change or improve
+// that. This route only throttles+logs direct, JS-less scripted POSTs to
+// /admin/login that bypass the SPA entirely.
 Route::post('/admin/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
+    // Mirror Filament's own gate (Login::authenticate() calls
+    // attemptWhen($credentials, fn ($user) => $this->isUserAllowedToAccessPanel($user), ...))
+    // so this fallback can never grant a session to a non-operator that the
+    // real login page would have refused.
+    //
+    // Auth::attempt() already fires Illuminate\Auth\Events\Failed itself when
+    // the credentials are simply wrong, so the AppServiceProvider listener
+    // picks that case up for free. We only need to fire it ourselves for the
+    // "valid credentials, but not an operator" case below, where Auth::attempt
+    // succeeds and would not otherwise fire Failed.
+    $credentialsValid = Auth::attempt($credentials);
+
+    if ($credentialsValid && Auth::user()->is_operator) {
         $request->session()->regenerate();
 
         return redirect('/admin');
+    }
+
+    if ($credentialsValid) {
+        // Valid credentials but not an operator: log the partial session back
+        // out and manually fire Failed so this still counts toward
+        // throttling/logging instead of silently leaving behind a
+        // non-operator authenticated session.
+        $user = Auth::user();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        Event::dispatch(new Failed('web', $user, $credentials));
     }
 
     return redirect('/admin/login');
