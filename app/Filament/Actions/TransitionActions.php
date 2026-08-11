@@ -36,7 +36,17 @@ class TransitionActions
             ->icon('heroicon-o-check')
             ->visible(fn (?Order $record) => $record && $record->status === OrderStatus::InProduction && $record->ready_at === null)
             ->action(function (Order $record) {
-                app(OrderService::class)->markReady($record);
+                try {
+                    app(OrderService::class)->markReady($record);
+                } catch (IllegalTransitionException | RuntimeException $e) {
+                    // Same shared handling as run(): a stale Workshop page (second
+                    // tab, or the order changed status between render and click)
+                    // must show the operator a red notification, not an
+                    // uncaught-exception error page.
+                    Notification::make()->danger()->title('Could not mark ready')->body($e->getMessage())->send();
+
+                    return;
+                }
 
                 Notification::make()->success()->title('Marked as made.')->send();
             });

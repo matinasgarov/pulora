@@ -27,6 +27,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -125,6 +126,19 @@ class ProductResource extends Resource
     private static function hasBeenOrdered(Product $product): bool
     {
         return OrderItem::whereIn('variant_id', $product->variants()->pluck('id'))->exists();
+    }
+
+    // Deleting an ordered product cascades to its variants (variants.product_id
+    // is cascadeOnDelete), which in turn nulls order_items.variant_id
+    // (nullOnDelete) for every historical order — permanently severing those
+    // order items from the catalogue and silently breaking
+    // OrderService::restoreCapacity() (it skips null variant_id) for any later
+    // cancel/refund on those orders. Retiring via is_active is the correct
+    // mechanism once a product has been ordered; deletion is strictly worse
+    // than the slug lock above and must be blocked the same way.
+    public static function canDelete(Model $record): bool
+    {
+        return ! static::hasBeenOrdered($record);
     }
 
     public static function table(Table $table): Table

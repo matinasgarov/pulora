@@ -53,8 +53,18 @@ Route::post('/orders/lookup', [OrderLookupController::class, 'find'])
 // own independent rate limiter (WithRateLimiting trait in
 // vendor/filament/filament/src/Auth/Pages/Login.php) that is what actually
 // protects the real UI today, and this route does not change or improve
-// that. This route only throttles+logs direct, JS-less scripted POSTs to
-// /admin/login that bypass the SPA entirely.
+// that.
+//
+// What this route actually covers is narrower than "any scripted POST":
+// ValidateCsrfToken runs ahead of ThrottleRequests:admin-login in Laravel's
+// default `web` middleware group, so a bare scripted POST with no prior page
+// visit has no CSRF token and is rejected 419 before it ever reaches the
+// throttle, Auth::attempt, or the Failed listener below — that case never
+// needed this route. What this route/throttle actually guards against is a
+// scripted client that first obtains a valid CSRF token (e.g. by GETing the
+// login page, or by reusing/scraping a session cookie) and then POSTs
+// repeated login attempts — CSRF alone does not stop that; the throttle
+// does.
 Route::post('/admin/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
 

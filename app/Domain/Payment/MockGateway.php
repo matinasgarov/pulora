@@ -10,13 +10,18 @@ class MockGateway implements PaymentGateway
 {
     public function __construct(private string $secret) {}
 
+    public function gatewayName(): string
+    {
+        return 'mock';
+    }
+
     public function createPayment(Order $order): PaymentRedirect
     {
         $reference = 'MOCK-' . $order->order_number;
 
         PaymentLog::create([
             'order_id' => $order->id,
-            'gateway' => 'mock',
+            'gateway' => $this->gatewayName(),
             'direction' => 'request',
             'reference' => $reference,
             'payload' => ['amount_minor' => $order->total_minor, 'currency' => $order->currency],
@@ -47,7 +52,7 @@ class MockGateway implements PaymentGateway
 
         PaymentLog::create([
             'order_id' => $order?->id,
-            'gateway' => 'mock',
+            'gateway' => $this->gatewayName(),
             'direction' => 'callback',
             'reference' => $reference,
             'payload' => ['valid' => $isValid] + $request->all(),
@@ -67,7 +72,7 @@ class MockGateway implements PaymentGateway
     {
         PaymentLog::create([
             'order_id' => $order->id,
-            'gateway' => 'mock',
+            'gateway' => $this->gatewayName(),
             'direction' => 'request',
             'reference' => $order->payment_reference,
             'payload' => ['refund_minor' => $amountMinor],

@@ -8,6 +8,7 @@ use App\Filament\Resources\ShippingZones\Pages\EditShippingZone;
 use App\Filament\Resources\ShippingZones\Pages\ListShippingZones;
 use App\Filament\Resources\ShippingZones\RelationManagers\RatesRelationManager;
 use BackedEnum;
+use Closure;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -35,7 +36,24 @@ class ShippingZoneResource extends Resource
                 ->placeholder('AZ'),
             Toggle::make('is_fallback')
                 ->label('Use as the fallback zone')
-                ->helperText('Orders to countries in no other zone are priced here.'),
+                ->helperText('Orders to countries in no other zone are priced here. At least one zone must always be the fallback, or checkout has no quote for unlisted countries.')
+                // ShippingCalculator falls back to the catch-all (is_fallback)
+                // zone for any country not covered by another zone. Allowing
+                // the last fallback zone to be switched off would silently
+                // leave checkout with no quote for those countries.
+                ->rule(fn (?ShippingZone $record): Closure => function (string $attribute, $value, Closure $fail) use ($record): void {
+                    if ($value) {
+                        return;
+                    }
+
+                    $anotherFallbackExists = ShippingZone::where('is_fallback', true)
+                        ->when($record, fn ($query) => $query->where('id', '!=', $record->id))
+                        ->exists();
+
+                    if (! $anotherFallbackExists) {
+                        $fail('At least one shipping zone must remain the fallback zone.');
+                    }
+                }),
         ]);
     }
 

@@ -113,6 +113,7 @@ it('does not refund a second time when the order is already refunded', function 
     $this->mock(PaymentGateway::class, function ($mock) {
         $mock->shouldReceive('refund')->once()
             ->andReturn(new RefundResult(succeeded: true, reference: 'REF-1'));
+        $mock->shouldReceive('gatewayName')->andReturn('mock');
     });
 
     $this->orders->transition($this->order, OrderStatus::Refunded);
@@ -130,6 +131,7 @@ it('leaves the order unchanged when the gateway refuses the refund', function ()
     $this->mock(PaymentGateway::class, function ($mock) {
         $mock->shouldReceive('refund')->once()
             ->andReturn(new RefundResult(succeeded: false, reference: 'DECLINED-1'));
+        $mock->shouldReceive('gatewayName')->andReturn('mock');
     });
 
     expect(fn () => app(OrderService::class)->transition($this->order, OrderStatus::Refunded))

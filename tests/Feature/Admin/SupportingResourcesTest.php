@@ -9,6 +9,7 @@ use App\Filament\Resources\DiscountCodes\Pages\ListDiscountCodes;
 use App\Filament\Resources\PaymentLogs\PaymentLogResource;
 use App\Filament\Resources\PaymentLogs\Pages\ListPaymentLogs;
 use App\Filament\Resources\ShippingZones\Pages\CreateShippingZone;
+use App\Filament\Resources\ShippingZones\Pages\EditShippingZone;
 use App\Filament\Resources\ShippingZones\Pages\ListShippingZones;
 use App\Models\User;
 
@@ -25,12 +26,49 @@ it('lists shipping zones', function () {
 });
 
 it('creates a shipping zone', function () {
+    // A fallback zone must already exist elsewhere, or this non-fallback
+    // creation would leave the system with zero fallback zones — see the
+    // fallback-zone validation tests below.
+    ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+
     livewire(CreateShippingZone::class)
         ->fillForm(['name' => 'Regional', 'country_codes' => ['GE', 'TR'], 'is_fallback' => false])
         ->call('create')
         ->assertHasNoFormErrors();
 
     expect(ShippingZone::where('name', 'Regional')->sole()->country_codes)->toBe(['GE', 'TR']);
+});
+
+it('refuses to switch off the only fallback zone', function () {
+    $zone = ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+
+    livewire(EditShippingZone::class, ['record' => $zone->getKey()])
+        ->fillForm(['is_fallback' => false])
+        ->call('save')
+        ->assertHasFormErrors(['is_fallback']);
+
+    expect($zone->fresh()->is_fallback)->toBeTrue();
+});
+
+it('allows switching off a fallback zone when another one remains', function () {
+    ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+    $zone = ShippingZone::create(['name' => 'Regional', 'country_codes' => ['GE'], 'is_fallback' => true]);
+
+    livewire(EditShippingZone::class, ['record' => $zone->getKey()])
+        ->fillForm(['is_fallback' => false])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($zone->fresh()->is_fallback)->toBeFalse();
+});
+
+it('refuses to create a non-fallback zone when no fallback zone exists yet', function () {
+    livewire(CreateShippingZone::class)
+        ->fillForm(['name' => 'Regional', 'country_codes' => ['GE'], 'is_fallback' => false])
+        ->call('create')
+        ->assertHasFormErrors(['is_fallback']);
+
+    expect(ShippingZone::where('name', 'Regional')->exists())->toBeFalse();
 });
 
 it('creates a discount code', function () {

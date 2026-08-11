@@ -22,7 +22,11 @@ class RatesRelationManager extends RelationManager
         return $schema->components([
             TextInput::make('name')->required()->placeholder('Standard'),
             TextInput::make('min_weight_grams')->numeric()->minValue(0)->default(0)->required(),
-            TextInput::make('max_weight_grams')->numeric()->minValue(1)->required(),
+            TextInput::make('max_weight_grams')
+                ->numeric()
+                ->minValue(1)
+                ->required()
+                ->helperText('Gaps or overlaps between brackets are not checked automatically. A parcel heavier than every bracket here gets no shipping quote at all — check coverage across all rates in this zone after adding, editing, or deleting one.'),
             MoneyInput::field('price_minor')
                 ->label('Price')
                 ->required(),

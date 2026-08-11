@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
+use App\Domain\Catalog\Models\Variant;
 use App\Domain\Money;
+use App\Domain\Order\Models\OrderItem;
 use App\Support\MoneyInput;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -54,6 +56,15 @@ class VariantsRelationManager extends RelationManager
                 IconColumn::make('is_active')->boolean(),
             ])
             ->headerActions([CreateAction::make()])
-            ->recordActions([EditAction::make(), DeleteAction::make()]);
+            ->recordActions([
+                EditAction::make(),
+                // Deleting a variant that's been ordered nulls
+                // order_items.variant_id (nullOnDelete), severing that order
+                // item from the catalogue and breaking capacity restoration
+                // on a later cancel/refund — same reasoning as the product-level
+                // guard in ProductResource::canDelete().
+                DeleteAction::make()
+                    ->authorize(fn (Variant $record) => ! OrderItem::where('variant_id', $record->id)->exists()),
+            ]);
     }
 }

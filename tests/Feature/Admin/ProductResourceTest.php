@@ -7,7 +7,9 @@ use App\Domain\Order\Models\OrderItem;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 
 use function Pest\Livewire\livewire;
 
@@ -78,4 +80,45 @@ it('leaves the slug editable on a product nobody has ordered', function () {
 
     livewire(EditProduct::class, ['record' => $product->getKey()])
         ->assertFormFieldIsEnabled('slug');
+});
+
+it('hides the delete action on a product that has been ordered', function () {
+    $product = Product::factory()->create();
+    $variant = Variant::factory()->for($product)->create();
+    OrderItem::factory()->for(Order::factory()->create())->create(['variant_id' => $variant->id]);
+
+    livewire(EditProduct::class, ['record' => $product->getKey()])
+        ->assertActionHidden('delete');
+
+    expect(Product::find($product->id))->not->toBeNull();
+});
+
+it('allows the delete action on a product nobody has ordered', function () {
+    $product = Product::factory()->create();
+
+    livewire(EditProduct::class, ['record' => $product->getKey()])
+        ->assertActionVisible('delete');
+});
+
+it('hides the variant delete action on a variant that has been ordered', function () {
+    $product = Product::factory()->create();
+    $variant = Variant::factory()->for($product)->create();
+    OrderItem::factory()->for(Order::factory()->create())->create(['variant_id' => $variant->id]);
+
+    livewire(VariantsRelationManager::class, [
+        'ownerRecord' => $product,
+        'pageClass' => EditProduct::class,
+    ])->assertActionHidden(TestAction::make('delete')->table($variant));
+
+    expect(Variant::find($variant->id))->not->toBeNull();
+});
+
+it('allows the variant delete action on a variant nobody has ordered', function () {
+    $product = Product::factory()->create();
+    $variant = Variant::factory()->for($product)->create();
+
+    livewire(VariantsRelationManager::class, [
+        'ownerRecord' => $product,
+        'pageClass' => EditProduct::class,
+    ])->assertActionVisible(TestAction::make('delete')->table($variant));
 });

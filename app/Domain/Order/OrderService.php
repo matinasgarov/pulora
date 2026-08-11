@@ -182,7 +182,7 @@ class OrderService
 
             PaymentLog::create([
                 'order_id' => $order->id,
-                'gateway' => class_basename(app(PaymentGateway::class)),
+                'gateway' => app(PaymentGateway::class)->gatewayName(),
                 'direction' => 'refund',
                 'reference' => $refund->reference,
                 'payload' => ['succeeded' => $refund->succeeded, 'amount_minor' => $order->total_minor],
