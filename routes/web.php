@@ -5,6 +5,7 @@ use App\Http\Controllers\CheckoutConfirmationController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderLookupController;
 use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/'.config('app.locale'));
 
+// {locale} is a single-segment wildcard, so /{locale} has the same shape as
+// GET /admin — Filament's Workshop page. Today /admin wins only because panel
+// providers register before web.php loads, which nothing here enforces and no
+// refactor is obliged to preserve. Losing that race would route /admin into
+// SetLocale, which would abort 404 and take the whole admin panel down.
+// Constraining the parameter means the group cannot match /admin at all, so
+// the ordering stops mattering. SetLocale still validates too — defence in
+// depth, and it keeps working for any route registered outside this group.
 Route::prefix('{locale}')
+    ->whereIn('locale', SetLocale::SUPPORTED)
     ->middleware('setlocale')
     ->name('storefront.')
     ->group(function () {

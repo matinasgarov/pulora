@@ -48,6 +48,19 @@ it('does not swallow the admin panel', function () {
     $this->get('/admin/login')->assertSuccessful();
 });
 
+// The real collision candidate: bare /admin is Filament's Workshop page, and
+// it has exactly the same shape as /{locale}. If the group ever matched it
+// first, SetLocale would 404 and the whole admin panel would be unreachable.
+it('does not swallow the bare admin url', function () {
+    $this->get('/admin')->assertRedirect('/admin/login');
+});
+
+it('refuses to route an unsupported locale at all', function () {
+    // Not merely a 404 from the middleware — the group must not match, so the
+    // constraint holds even if SetLocale is ever removed from the stack.
+    app('router')->getRoutes()->match(Illuminate\Http\Request::create('/de'));
+})->throws(Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+
 it('does not swallow the health check', function () {
     $this->get('/up')->assertSuccessful();
 });
