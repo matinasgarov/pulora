@@ -31,13 +31,13 @@ trait HasTranslations
             return $value;
         }
 
-        return $this->resolveTranslation($value);
+        return $this->resolveTranslation($value ?? $this->rawTranslatable($key));
     }
 
     /** The raw per-locale array, as stored. */
     public function getTranslations(string $attribute): array
     {
-        $value = parent::getAttributeValue($attribute);
+        $value = parent::getAttributeValue($attribute) ?? $this->rawTranslatable($attribute);
 
         if (is_array($value)) {
             return $value;
@@ -58,6 +58,23 @@ trait HasTranslations
         $this->setAttribute($attribute, $translations);
 
         return $this;
+    }
+
+    /**
+     * The undecoded column value, for text that is not JSON at all.
+     *
+     * Laravel's `array` cast runs the column through json_decode(), which
+     * returns null for a bare string — so legacy content the migration never
+     * wrapped (a raw SQL import, a tinker fix, a row added before the
+     * migration ran) would silently read back as empty. Recovering the raw
+     * attribute is what makes "tolerant of plain strings" true at the model
+     * layer and not only at migration time.
+     */
+    private function rawTranslatable(string $attribute): ?string
+    {
+        $raw = $this->attributes[$attribute] ?? null;
+
+        return is_string($raw) && $raw !== '' ? $raw : null;
     }
 
     private function resolveTranslation(mixed $value): string

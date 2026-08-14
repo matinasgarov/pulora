@@ -92,9 +92,34 @@ return new class extends Migration
                 }
 
                 DB::table($table)->where('id', $row->id)->update([
-                    $column => $decoded[config('app.fallback_locale')] ?? reset($decoded) ?: '',
+                    $column => $this->flatten($decoded),
                 ]);
             }
         });
+    }
+
+    /**
+     * The single string a per-locale array collapses back to.
+     *
+     * Written out rather than `$decoded[$fallback] ?? reset($decoded) ?: ''`,
+     * because `?:` treats the string "0" as falsy — a product literally named
+     * "0" would have rolled back to an empty name. Emptiness is tested for
+     * explicitly so a legitimate "0" survives the round trip.
+     */
+    private function flatten(array $decoded): string
+    {
+        $fallback = $decoded[config('app.fallback_locale')] ?? null;
+
+        if ($fallback !== null && $fallback !== '') {
+            return (string) $fallback;
+        }
+
+        foreach ($decoded as $value) {
+            if ($value !== null && $value !== '') {
+                return (string) $value;
+            }
+        }
+
+        return '';
     }
 };
