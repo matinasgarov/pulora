@@ -69,3 +69,18 @@ php artisan shop:make-admin
 ```
 
 Then sign in at `/admin`.
+
+## Verifying oversell protection
+
+`lockForUpdate()` is a silent no-op on SQLite, so the two concurrency tests skip
+on the default suite and must be run against MySQL before the shop takes real
+money:
+
+```bash
+docker compose up -d mysql
+DB_CONNECTION=mysql_test php artisan test
+```
+
+Expect 177 passed, 0 skipped. `ConcurrentOversellTest` races four real processes
+for one unit of stock; if the row lock ever regresses, it fails with four
+successful orders instead of one.

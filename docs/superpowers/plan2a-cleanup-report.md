@@ -198,3 +198,36 @@ following the Plan 1 human ruling that kept it sequential and renamed it to say
 so. Oversell protection under genuine concurrency remains unproven by test, and
 closing that gap needs a test that spawns real parallel processes racing on the
 same variant.
+
+---
+
+## Concurrent oversell test
+
+`OversellTest` is sequential, so it never exercised lock contention. Added
+`tests/Concurrency/ConcurrentOversellTest.php`, which races four real OS
+processes for the last unit of a variant.
+
+**Design notes.**
+
+- `RefreshDatabase` wraps each test in a transaction that is never committed, so
+  fixtures created under it are invisible to other processes. The file therefore
+  lives outside `Feature/` and `Unit/` — the two directories `tests/Pest.php`
+  applies that trait to — and commits its fixtures. A `Concurrency` testsuite was
+  added to `phpunit.xml` so `php artisan test` still picks it up.
+- The workers are a plain script (`attempt-order.php`), not an artisan command:
+  nothing in the shipped application should be able to place an order from the
+  console, so the harness stays inside `tests/`.
+- Each worker boots the framework, then busy-waits on a shared start timestamp
+  before calling `createFromCart()`. Without that barrier the workers stagger by
+  more than a transaction takes to complete, and the test silently degenerates
+  into the sequential case `OversellTest` already covers.
+
+**The test was verified to fail.** With `lockForUpdate()` removed from
+`OrderService::reserveStock()`, all four workers succeeded — four orders against
+one unit of stock, a real oversell — and the test failed on
+`Failed asserting that 4 is identical to 1`. The lock was restored and the test
+passes again. This is what makes it evidence rather than decoration: it detects
+the exact regression it exists to catch.
+
+Full suite on MySQL: **177 passed, 0 skipped**. On the default SQLite connection
+both concurrency tests skip, as intended: 175 passed, 2 skipped.
