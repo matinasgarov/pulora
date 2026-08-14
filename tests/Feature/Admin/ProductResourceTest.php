@@ -43,7 +43,7 @@ it('does not drift the price when the record is saved without touching it', func
     $product = Product::factory()->create(['base_price_minor' => 4999]);
 
     livewire(EditProduct::class, ['record' => $product->getKey()])
-        ->fillForm(['name' => 'Renamed wallet'])
+        ->fillForm(['name_en' => 'Renamed wallet'])
         ->call('save')
         ->assertHasNoFormErrors();
 
@@ -61,7 +61,7 @@ it('rejects a duplicate slug', function () {
     Product::factory()->create(['slug' => 'bifold']);
 
     livewire(CreateProduct::class)
-        ->fillForm(['name' => 'Another', 'slug' => 'bifold', 'base_price_minor' => '10.00'])
+        ->fillForm(['name_en' => 'Another', 'slug' => 'bifold', 'base_price_minor' => '10.00'])
         ->call('create')
         ->assertHasFormErrors(['slug']);
 });
