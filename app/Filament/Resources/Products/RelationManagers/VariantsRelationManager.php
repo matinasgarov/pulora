@@ -69,7 +69,7 @@ class VariantsRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->mutateRecordDataUsing(fn (array $data): array => static::mutateTranslatableDataBeforeFill($data))
+                    ->mutateRecordDataUsing(fn (array $data, Variant $record): array => static::mutateTranslatableDataBeforeFill($data, $record))
                     ->mutateFormDataUsing(fn (array $data): array => static::mutateTranslatableDataBeforeSave($data)),
                 // Deleting a variant that's been ordered nulls
                 // order_items.variant_id (nullOnDelete), severing that order
@@ -81,10 +81,21 @@ class VariantsRelationManager extends RelationManager
             ]);
     }
 
-    private static function mutateTranslatableDataBeforeFill(array $data): array
+    /**
+     * Read through the record rather than the form data.
+     *
+     * The array handed to mutateRecordDataUsing() holds whatever is in the
+     * column, which is not always a per-locale array — content written before
+     * the translatable migration, or by a factory passing a bare string, is
+     * plain text. Reading that as [] blanked the field, and saving the blank
+     * form then destroyed the description. getTranslations() wraps a bare
+     * string as fallback-locale content, which is why EditProduct goes through
+     * the record too.
+     */
+    private static function mutateTranslatableDataBeforeFill(array $data, Variant $record): array
     {
         foreach (self::TRANSLATABLE as $attribute) {
-            $translations = is_array($data[$attribute] ?? null) ? $data[$attribute] : [];
+            $translations = $record->getTranslations($attribute);
 
             foreach (['en', 'az'] as $locale) {
                 $data["{$attribute}_{$locale}"] = $translations[$locale] ?? null;
