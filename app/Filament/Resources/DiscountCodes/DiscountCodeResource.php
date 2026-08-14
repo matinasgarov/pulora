@@ -21,6 +21,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class DiscountCodeResource extends Resource
 {
@@ -40,7 +41,15 @@ class DiscountCodeResource extends Resource
                 ->options(['percent' => 'Percentage off', 'fixed' => 'Fixed amount off'])
                 ->default('percent')
                 ->required()
-                ->live(),
+                ->live()
+                // Switching kind on a used code silently reinterprets its stored
+                // value (10% off becomes 10.00 AZN off) for orders that already
+                // reference it. Same philosophy as the slug lock on an ordered
+                // product: retire with is_active instead.
+                ->disabled(fn (?DiscountCode $record) => static::hasBeenUsed($record))
+                ->helperText(fn (?DiscountCode $record) => static::hasBeenUsed($record)
+                    ? 'Locked: this code has been used. Deactivate it instead of changing its kind.'
+                    : null),
 
             // A percent is a plain integer; a fixed amount is money and gets the
             // same string-parsed conversion as every other price in the panel.
@@ -52,7 +61,21 @@ class DiscountCodeResource extends Resource
                 ->rule(fn (Get $get) => $get('kind') === 'fixed'
                     ? 'regex:/^\d+([.,]\d{1,2})?$/'
                     : 'integer')
-                ->minValue(1)
+                // minValue() validates string *length* on a non-numeric field,
+                // which this is on the 'fixed' branch (a money string like
+                // "10.00"). A blanket ->numeric() would break that string and
+                // the regex rule above, so the minimum is enforced explicitly
+                // per branch instead: >=1 minor unit isn't meaningful to check
+                // as a string, so 'fixed' is checked in minor units below,
+                // while 'percent' keeps the simple numeric minValue.
+                ->minValue(fn (Get $get) => $get('kind') === 'percent' ? 1 : null)
+                ->rule(fn (Get $get) => $get('kind') === 'fixed'
+                    ? function (string $attribute, $value, \Closure $fail) {
+                        if ((MoneyInput::toMinor($value) ?? 0) < 1) {
+                            $fail('The amount must be at least 0.01 AZN.');
+                        }
+                    }
+                    : null)
                 ->maxValue(fn (Get $get) => $get('kind') === 'percent' ? 100 : null)
                 ->formatStateUsing(fn (?int $state, Get $get) => $get('kind') === 'fixed'
                     ? MoneyInput::toManats($state)
@@ -106,5 +129,19 @@ class DiscountCodeResource extends Resource
             'create' => CreateDiscountCode::route('/create'),
             'edit' => EditDiscountCode::route('/{record}/edit'),
         ];
+    }
+
+    /** True once a code has actually discounted an order. */
+    private static function hasBeenUsed(?DiscountCode $record): bool
+    {
+        return $record !== null && $record->times_used > 0;
+    }
+
+    // Deleting a used code destroys the record of why some orders were
+    // discounted. is_active = false is the correct retirement mechanism,
+    // same philosophy as ProductResource::canDelete().
+    public static function canDelete(Model $record): bool
+    {
+        return ! static::hasBeenUsed($record);
     }
 }

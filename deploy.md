@@ -26,6 +26,8 @@ php artisan filament:assets
 php artisan storage:link      # first deploy only
 php artisan config:cache
 php artisan route:cache
+php artisan view:cache
+php artisan filament:optimize
 ```
 
 ## Cron

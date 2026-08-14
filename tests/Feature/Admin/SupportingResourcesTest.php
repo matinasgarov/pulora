@@ -5,9 +5,8 @@ use App\Domain\Payment\Models\PaymentLog;
 use App\Domain\Shipping\Models\ShippingZone;
 use App\Filament\Resources\DiscountCodes\Pages\CreateDiscountCode;
 use App\Filament\Resources\DiscountCodes\Pages\EditDiscountCode;
-use App\Filament\Resources\DiscountCodes\Pages\ListDiscountCodes;
-use App\Filament\Resources\PaymentLogs\PaymentLogResource;
 use App\Filament\Resources\PaymentLogs\Pages\ListPaymentLogs;
+use App\Filament\Resources\PaymentLogs\PaymentLogResource;
 use App\Filament\Resources\ShippingZones\Pages\CreateShippingZone;
 use App\Filament\Resources\ShippingZones\Pages\EditShippingZone;
 use App\Filament\Resources\ShippingZones\Pages\ListShippingZones;
@@ -108,6 +107,77 @@ it('ignores a times_used value pushed at the create form', function () {
 
     // times_used belongs to DiscountService::consume()'s atomic increment.
     expect(DiscountCode::where('code', 'SNEAKY')->sole()->times_used)->toBe(0);
+});
+
+it('locks the kind field on a discount code that has been used', function () {
+    $code = DiscountCode::create(['code' => 'USED10', 'kind' => 'percent', 'value' => 10, 'times_used' => 1]);
+
+    livewire(EditDiscountCode::class, ['record' => $code->getKey()])
+        ->assertFormFieldIsDisabled('kind');
+});
+
+it('leaves the kind field editable on a discount code nobody has used', function () {
+    $code = DiscountCode::create(['code' => 'UNUSED10', 'kind' => 'percent', 'value' => 10]);
+
+    livewire(EditDiscountCode::class, ['record' => $code->getKey()])
+        ->assertFormFieldIsEnabled('kind');
+});
+
+it('rejects a fixed discount amount below the minimum', function () {
+    livewire(CreateDiscountCode::class)
+        ->fillForm(['code' => 'ZERO', 'kind' => 'fixed', 'value' => '0.00'])
+        ->call('create')
+        ->assertHasFormErrors(['value']);
+});
+
+it('accepts a small but positive fixed discount amount', function () {
+    livewire(CreateDiscountCode::class)
+        ->fillForm(['code' => 'SMALL', 'kind' => 'fixed', 'value' => '0.01'])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(DiscountCode::where('code', 'SMALL')->sole()->value)->toBe(1);
+});
+
+it('hides the delete action on a discount code that has been used', function () {
+    $code = DiscountCode::create(['code' => 'USEDDEL', 'kind' => 'percent', 'value' => 10, 'times_used' => 1]);
+
+    livewire(EditDiscountCode::class, ['record' => $code->getKey()])
+        ->assertActionHidden('delete');
+
+    expect(DiscountCode::find($code->id))->not->toBeNull();
+});
+
+it('allows the delete action on a discount code nobody has used', function () {
+    $code = DiscountCode::create(['code' => 'UNUSEDDEL', 'kind' => 'percent', 'value' => 10]);
+
+    livewire(EditDiscountCode::class, ['record' => $code->getKey()])
+        ->assertActionVisible('delete');
+});
+
+it('hides the delete action on the last remaining fallback zone', function () {
+    $zone = ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+
+    livewire(EditShippingZone::class, ['record' => $zone->getKey()])
+        ->assertActionHidden('delete');
+
+    expect(ShippingZone::find($zone->id))->not->toBeNull();
+});
+
+it('allows deleting a fallback zone when another one remains', function () {
+    ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+    $zone = ShippingZone::create(['name' => 'Regional', 'country_codes' => ['GE'], 'is_fallback' => true]);
+
+    livewire(EditShippingZone::class, ['record' => $zone->getKey()])
+        ->assertActionVisible('delete');
+});
+
+it('allows deleting a non-fallback zone', function () {
+    ShippingZone::create(['name' => 'Azerbaijan', 'country_codes' => ['AZ'], 'is_fallback' => true]);
+    $zone = ShippingZone::create(['name' => 'Regional', 'country_codes' => ['GE'], 'is_fallback' => false]);
+
+    livewire(EditShippingZone::class, ['record' => $zone->getKey()])
+        ->assertActionVisible('delete');
 });
 
 it('lists payment logs and refuses creation', function () {

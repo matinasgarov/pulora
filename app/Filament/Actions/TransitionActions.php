@@ -7,8 +7,8 @@ use App\Domain\Order\Models\Order;
 use App\Domain\Order\OrderService;
 use App\Domain\Order\OrderStatus;
 use Filament\Actions\Action;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use RuntimeException;
@@ -38,7 +38,7 @@ class TransitionActions
             ->action(function (Order $record) {
                 try {
                     app(OrderService::class)->markReady($record);
-                } catch (IllegalTransitionException | RuntimeException $e) {
+                } catch (IllegalTransitionException|RuntimeException $e) {
                     // Same shared handling as run(): a stale Workshop page (second
                     // tab, or the order changed status between render and click)
                     // must show the operator a red notification, not an
@@ -72,7 +72,7 @@ class TransitionActions
     {
         return Action::make('deliver')
             ->label('Mark delivered')
-            ->visible(fn (Order $record) => $record->status->canTransitionTo(OrderStatus::Delivered))
+            ->visible(fn (?Order $record) => $record?->status->canTransitionTo(OrderStatus::Delivered) ?? false)
             ->action(fn (Order $record) => static::run($record, OrderStatus::Delivered));
     }
 
@@ -83,7 +83,7 @@ class TransitionActions
             ->color('danger')
             ->requiresConfirmation()
             ->modalDescription('Cancelling returns this order\'s capacity to the variants.')
-            ->visible(fn (Order $record) => $record->status->canTransitionTo(OrderStatus::Cancelled))
+            ->visible(fn (?Order $record) => $record?->status->canTransitionTo(OrderStatus::Cancelled) ?? false)
             ->schema([Textarea::make('note')->label('Why?')->required()])
             ->action(fn (Order $record, array $data) => static::run($record, OrderStatus::Cancelled, $data['note']));
     }
@@ -94,7 +94,7 @@ class TransitionActions
             ->label('Refund')
             ->color('danger')
             ->requiresConfirmation()
-            ->visible(fn (Order $record) => $record->status->canTransitionTo(OrderStatus::Refunded))
+            ->visible(fn (?Order $record) => $record?->status->canTransitionTo(OrderStatus::Refunded) ?? false)
             ->schema([
                 Textarea::make('note')->label('Why?')->required(),
                 Toggle::make('restore_capacity')
@@ -126,7 +126,7 @@ class TransitionActions
                 restoreCapacity: $restoreCapacity,
                 trackingNumber: $trackingNumber,
             );
-        } catch (IllegalTransitionException | RuntimeException $e) {
+        } catch (IllegalTransitionException|RuntimeException $e) {
             // The gateway refusing a refund is the case that matters here: the
             // operator must see what actually happened, never an assumed success.
             Notification::make()->danger()->title('Could not update the order')->body($e->getMessage())->send();

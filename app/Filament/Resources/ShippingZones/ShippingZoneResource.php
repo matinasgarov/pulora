@@ -19,6 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ShippingZoneResource extends Resource
 {
@@ -74,6 +75,20 @@ class ShippingZoneResource extends Resource
         return [
             RatesRelationManager::class,
         ];
+    }
+
+    // Deleting the last fallback zone leaves ShippingCalculator with no quote
+    // for any country not covered by another zone — the same failure mode
+    // the is_fallback toggle's rule() above already guards against.
+    public static function canDelete(Model $record): bool
+    {
+        if (! $record->is_fallback) {
+            return true;
+        }
+
+        return ShippingZone::where('is_fallback', true)
+            ->where('id', '!=', $record->id)
+            ->exists();
     }
 
     public static function getPages(): array

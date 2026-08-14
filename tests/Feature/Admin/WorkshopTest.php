@@ -8,6 +8,7 @@ use App\Domain\Order\OrderStatus;
 use App\Filament\Pages\Workshop;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Livewire\Features\SupportTesting\Testable;
 
 use function Pest\Livewire\livewire;
 
@@ -33,7 +34,7 @@ beforeEach(function () {
 });
 
 /** Reads a column off the mounted page as a plain array of ids. */
-function columnIds(\Livewire\Features\SupportTesting\Testable $page, string $property): array
+function columnIds(Testable $page, string $property): array
 {
     return collect($page->get($property))->pluck('id')->all();
 }
@@ -97,6 +98,26 @@ it('moves an order across when the card action is used', function () {
         ->callAction('start_production', arguments: ['order' => $order->id]);
 
     expect($order->fresh()->status)->toBe(OrderStatus::InProduction);
+});
+
+it('marks an order ready from the card action', function () {
+    $order = ($this->makeOrder)(OrderStatus::InProduction);
+
+    livewire(Workshop::class)
+        ->callAction('mark_ready', arguments: ['order' => $order->id]);
+
+    expect($order->fresh()->ready_at)->not->toBeNull();
+});
+
+it('ships an order from the card action with a tracking number', function () {
+    $order = ($this->makeOrder)(OrderStatus::InProduction, ['ready_at' => now()]);
+
+    livewire(Workshop::class)
+        ->callAction('ship', arguments: ['order' => $order->id], data: ['tracking_number' => 'AZ123456789AZ']);
+
+    expect($order->fresh())
+        ->status->toBe(OrderStatus::Shipped)
+        ->tracking_number->toBe('AZ123456789AZ');
 });
 
 it('shows the number strip', function () {

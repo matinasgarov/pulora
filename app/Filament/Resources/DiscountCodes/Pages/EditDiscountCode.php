@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DiscountCodes\Pages;
 
+use App\Domain\Discount\Models\DiscountCode;
 use App\Filament\Resources\DiscountCodes\DiscountCodeResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -13,7 +14,10 @@ class EditDiscountCode extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            // See DiscountCodeResource::canDelete(): deleting a used code
+            // destroys the record of why some orders were discounted.
+            DeleteAction::make()
+                ->authorize(fn (DiscountCode $record) => DiscountCodeResource::canDelete($record)),
         ];
     }
 }

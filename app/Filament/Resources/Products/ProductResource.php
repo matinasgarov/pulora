@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Products;
 
 use App\Domain\Catalog\Models\Product;
-use BackedEnum;
 use App\Domain\Money;
 use App\Domain\Order\Models\OrderItem;
 use App\Filament\Resources\Products\Pages\CreateProduct;
@@ -11,6 +10,7 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
 use App\Support\MoneyInput;
+use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;

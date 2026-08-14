@@ -5,7 +5,9 @@ use App\Domain\Catalog\Models\Variant;
 use App\Domain\Order\Models\Order;
 use App\Domain\Order\Models\OrderEvent;
 use App\Domain\Order\Models\OrderItem;
+use App\Domain\Order\OrderService;
 use App\Domain\Order\OrderStatus;
+use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\User;
@@ -38,13 +40,33 @@ it('lists orders', function () {
 });
 
 it('has no create action', function () {
-    expect(App\Filament\Resources\Orders\OrderResource::canCreate())->toBeFalse();
+    expect(OrderResource::canCreate())->toBeFalse();
 });
 
 it('shows the snapshot line items and the personalization', function () {
     livewire(ViewOrder::class, ['record' => $this->order->getKey()])
         ->assertSee('MA')
         ->assertSee($this->order->order_number);
+});
+
+// Filament flattens an array state and calls formatStateUsing once per value,
+// so the operator sees each value but never its key. What matters is that a
+// second personalization option cannot go unnoticed on the workshop floor.
+it('shows every value of a multi-key personalization', function () {
+    $order = Order::factory()->create([
+        'status' => OrderStatus::Paid,
+        'paid_at' => now()->subDays(2),
+    ]);
+
+    OrderItem::factory()->for($order)->create([
+        'variant_id' => $this->variant->id,
+        'quantity' => 1,
+        'personalization' => ['monogram' => 'MA', 'gift_wrap' => 'yes'],
+    ]);
+
+    livewire(ViewOrder::class, ['record' => $order->getKey()])
+        ->assertSee('MA')
+        ->assertSee('yes');
 });
 
 it('shows the snapshot name even after the product is renamed', function () {
@@ -103,7 +125,7 @@ it('hides the production action on an order that is already shipped', function (
 });
 
 it('shows the event history', function () {
-    app(App\Domain\Order\OrderService::class)
+    app(OrderService::class)
         ->transition($this->order, OrderStatus::InProduction, 'Cutting today', $this->user->id);
 
     livewire(ViewOrder::class, ['record' => $this->order->fresh()->getKey()])
