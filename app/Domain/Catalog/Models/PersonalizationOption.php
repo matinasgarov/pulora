@@ -2,11 +2,16 @@
 
 namespace App\Domain\Catalog\Models;
 
+use App\Support\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 
 class PersonalizationOption extends Model
 {
+    use HasTranslations;
+
     protected $guarded = [];
+
+    protected array $translatable = ['label'];
 
     protected $casts = [
         'price_delta_minor' => 'integer',
