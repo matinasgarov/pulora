@@ -27,7 +27,7 @@ it('lists products', function () {
 it('stores the price the operator typed as qepik', function () {
     livewire(CreateProduct::class)
         ->fillForm([
-            'name' => 'Card holder',
+            'name_en' => 'Card holder',
             'slug' => 'card-holder',
             'base_price_minor' => '49.99',
             'lead_time_days' => 3,
@@ -52,9 +52,9 @@ it('does not drift the price when the record is saved without touching it', func
 
 it('rejects a product with no name', function () {
     livewire(CreateProduct::class)
-        ->fillForm(['name' => '', 'slug' => 'x', 'base_price_minor' => '10.00'])
+        ->fillForm(['name_en' => '', 'slug' => 'x', 'base_price_minor' => '10.00'])
         ->call('create')
-        ->assertHasFormErrors(['name']);
+        ->assertHasFormErrors(['name_en']);
 });
 
 it('rejects a duplicate slug', function () {

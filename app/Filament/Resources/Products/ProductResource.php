@@ -1,4 +1,4 @@
-<?php
+<?php // app/Filament/Resources/Products/ProductResource.php
 
 namespace App\Filament\Resources\Products;
 
@@ -41,10 +41,15 @@ class ProductResource extends Resource
         return $schema->components([
             Tabs::make()->tabs([
                 Tabs\Tab::make('Details')->schema([
-                    TextInput::make('name')
+                    TextInput::make('name_en')
+                        ->label('Name (English)')
                         ->required()
                         ->live(onBlur: true)
                         ->afterStateUpdated(fn (?string $state, Set $set) => $set('slug', Str::slug($state ?? ''))),
+
+                    TextInput::make('name_az')
+                        ->label('Name (Azərbaycan)')
+                        ->helperText('Leave blank to fall back to English.'),
 
                     TextInput::make('slug')
                         ->required()
@@ -56,8 +61,11 @@ class ProductResource extends Resource
                             ? 'Locked: this product has been ordered.'
                             : null),
 
-                    Textarea::make('description')->rows(4),
-                    Textarea::make('story')->rows(4),
+                    Textarea::make('description_en')->label('Description (English)')->rows(4),
+                    Textarea::make('description_az')->label('Description (Azərbaycan)')->rows(4),
+
+                    Textarea::make('story_en')->label('Story (English)')->rows(4),
+                    Textarea::make('story_az')->label('Story (Azərbaycan)')->rows(4),
 
                     MoneyInput::field('base_price_minor')
                         ->label('Price')

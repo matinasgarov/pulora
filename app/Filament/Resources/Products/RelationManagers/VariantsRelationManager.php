@@ -1,4 +1,4 @@
-<?php
+<?php // app/Filament/Resources/Products/RelationManagers/VariantsRelationManager.php
 
 namespace App\Filament\Resources\Products\RelationManagers;
 
@@ -22,11 +22,19 @@ class VariantsRelationManager extends RelationManager
 {
     protected static string $relationship = 'variants';
 
+    /** Translatable columns resolve to a string, so the form uses flat per-locale fields. */
+    private const TRANSLATABLE = ['description'];
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([
             TextInput::make('sku')->required()->unique(ignoreRecord: true),
-            TextInput::make('description')->placeholder('Cognac / natural thread'),
+            TextInput::make('description_en')
+                ->label('Options (English)')
+                ->placeholder('Cognac / natural thread'),
+            TextInput::make('description_az')
+                ->label('Options (Azərbaycan)')
+                ->placeholder('Konyak / təbii sap'),
             MoneyInput::field('price_minor_override')
                 ->label('Price override')
                 ->helperText('Leave blank to use the product price.'),
@@ -55,9 +63,14 @@ class VariantsRelationManager extends RelationManager
                     ->rules(['integer', 'min:0']),
                 IconColumn::make('is_active')->boolean(),
             ])
-            ->headerActions([CreateAction::make()])
+            ->headerActions([
+                CreateAction::make()
+                    ->mutateFormDataUsing(fn (array $data): array => static::mutateTranslatableDataBeforeSave($data)),
+            ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->mutateRecordDataUsing(fn (array $data): array => static::mutateTranslatableDataBeforeFill($data))
+                    ->mutateFormDataUsing(fn (array $data): array => static::mutateTranslatableDataBeforeSave($data)),
                 // Deleting a variant that's been ordered nulls
                 // order_items.variant_id (nullOnDelete), severing that order
                 // item from the catalogue and breaking capacity restoration
@@ -66,5 +79,34 @@ class VariantsRelationManager extends RelationManager
                 DeleteAction::make()
                     ->authorize(fn (Variant $record) => ! OrderItem::where('variant_id', $record->id)->exists()),
             ]);
+    }
+
+    private static function mutateTranslatableDataBeforeFill(array $data): array
+    {
+        foreach (self::TRANSLATABLE as $attribute) {
+            $translations = is_array($data[$attribute] ?? null) ? $data[$attribute] : [];
+
+            foreach (['en', 'az'] as $locale) {
+                $data["{$attribute}_{$locale}"] = $translations[$locale] ?? null;
+            }
+
+            unset($data[$attribute]);
+        }
+
+        return $data;
+    }
+
+    private static function mutateTranslatableDataBeforeSave(array $data): array
+    {
+        foreach (self::TRANSLATABLE as $attribute) {
+            $data[$attribute] = [
+                'en' => $data["{$attribute}_en"] ?? null,
+                'az' => $data["{$attribute}_az"] ?? null,
+            ];
+
+            unset($data["{$attribute}_en"], $data["{$attribute}_az"]);
+        }
+
+        return $data;
     }
 }
