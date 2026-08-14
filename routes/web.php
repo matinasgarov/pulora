@@ -11,9 +11,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/'.config('app.locale'));
+
+Route::prefix('{locale}')
+    ->middleware('setlocale')
+    ->name('storefront.')
+    ->group(function () {
+        // Tasks 5-8 replace each closure with its controller.
+        Route::get('/', fn () => response('catalogue'))->name('catalogue');
+        Route::get('/product/{slug}', fn () => response('product'))->name('product');
+        Route::get('/cart', fn () => response('cart'))->name('cart');
+        Route::get('/checkout', fn () => response('checkout'))->name('checkout');
+    });
 
 if (app()->environment(['local', 'testing'])) {
     Route::get('/payment/mock/{reference}', function (string $reference) {
