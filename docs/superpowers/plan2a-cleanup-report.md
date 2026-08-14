@@ -162,3 +162,39 @@ without attempting a forced `callAction('delete')` to prove the server-side
 `authorize()` rejects it. This matches the existing `ProductResourceTest`
 convention, so it is a pre-existing gap in the codebase's testing style rather
 than something these commits introduced.
+
+---
+
+## OversellTest run against real MySQL
+
+The open item carried from Plan 1 — `OversellTest` had never executed against a
+real engine, because `lockForUpdate()` is a silent no-op on SQLite and the test
+skips itself unless the connection is `mysql_test`.
+
+Run against MySQL 8.4 (`docker compose up -d mysql`, port 3307):
+
+```
+DB_CONNECTION=mysql_test php artisan test --filter=OversellTest
+  ✓ it checks stock inside the locked transaction so the second order is refused
+  Tests: 1 passed (2 assertions)
+
+DB_CONNECTION=mysql_test php artisan test
+  Tests: 176 passed (448 assertions)
+```
+
+**What this establishes.** The whole suite — not just the oversell test — passes
+against real InnoDB, with real foreign keys and real strict mode, where before it
+had only ever run on SQLite. `OversellTest` genuinely executed rather than
+skipping (its `beforeEach` guard skips unless `config('database.default')` is
+`mysql_test`, so a pass proves it ran). The 1 skip that shadowed every previous
+run is gone.
+
+**What this does NOT establish.** The test is sequential by design: it calls
+`createFromCart()` twice in a single process, one after the other. Two sequential
+transactions never contend, so `lockForUpdate()` still never actually blocks
+anything. What is verified is that the stock check sits *inside* the locked
+transaction and refuses the second order — which is what the test's name claims,
+following the Plan 1 human ruling that kept it sequential and renamed it to say
+so. Oversell protection under genuine concurrency remains unproven by test, and
+closing that gap needs a test that spawns real parallel processes racing on the
+same variant.
