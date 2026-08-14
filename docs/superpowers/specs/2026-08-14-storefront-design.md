@@ -132,10 +132,13 @@ confirmation and shipment emails go out in the language the customer ordered in.
 
 ### Admin impact
 
-This edits Plan 2A. `ProductResource` gains per-locale fields (a tab per
-language), as do the variants relation manager and the personalization labels.
-Validation requires the default locale and allows the other to be blank, falling
-back at render time.
+**Filament's own interface stays English** — labels, menus, navigation and
+notifications are not translated. There is one operator and they read English.
+
+What changes is content entry only: `ProductResource` gains per-locale fields (a
+tab per language), as do the variants relation manager and the personalization
+labels, so Azerbaijani product copy can be typed in at all. Validation requires
+the default locale and allows the other to be blank, falling back at render time.
 
 ## 2. Design system
 
