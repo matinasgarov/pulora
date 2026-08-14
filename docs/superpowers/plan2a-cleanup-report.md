@@ -121,3 +121,44 @@ Reviewed and judged correct as-is:
 - The `personalization` array branch (finding 8) is dead code for every shape the
   app currently produces. Left in deliberately, but it is a candidate for deletion
   if a future reader would rather not maintain an unreachable path.
+
+---
+
+## Follow-up: independent review of d016d10
+
+The cleanup commit was reviewed after the fact (it was written partly by a
+subagent that died to a rate limit and finished in-session, so it had missed the
+usual review gate). Verdict: ready to keep, no Critical issues. Two items were
+acted on in the follow-up commit:
+
+**Important — personalization keys were dropped on the order view.** Finding 8
+above resolved the *test* to match reality, but left the underlying UX defect:
+Filament flattened the array state and rendered `MA, yes`, with no way for an
+operator to tell the monogram from the gift-wrap flag. On a made-to-order product
+that is a wrong-cut waiting to happen. Fixed at the source — `ViewOrder` now
+builds the joined string as the entry's `state()`, so Filament never sees an array
+to flatten, and each value keeps its label (`Monogram: MA, Gift Wrap: yes`), using
+the same `str($key)->headline()` style as the workshop card. The unreachable
+`is_array($state)` branch in `formatStateUsing` is gone with it. The test now
+asserts the labelled output, which makes it real coverage rather than an assertion
+weakened to fit the bug.
+
+**Minor — validation rule relied on undocumented parser tolerance.** The `fixed`
+minimum was gated by returning `null` from a `rule()` closure, which only worked
+because Laravel's `ValidationRuleParser` reduces a null rule to an empty string
+and skips it. Now gated with Filament's documented `condition:` argument. Note the
+reviewer's suggested form (passing the validation callable directly as `$rule`)
+does *not* work — Filament evaluates a Closure `$rule` rather than treating it as
+a validation callable, so the callable is wrapped in an outer closure that returns
+it. That is what the added comment records.
+
+**Not acted on:** the reviewer noted Pint's file-scoped pass left concatenation
+spacing (`'x: '.$y`) inconsistent with untouched Plan 1 files (`'x: ' . $y`). A
+repo-wide Pint pass would settle it, but it would churn a large amount of
+unrelated Plan 1 code, so it is left as a deliberate, separate decision.
+
+Also unchanged and still open: the delete-guard tests assert `assertActionHidden`
+without attempting a forced `callAction('delete')` to prove the server-side
+`authorize()` rejects it. This matches the existing `ProductResourceTest`
+convention, so it is a pre-existing gap in the codebase's testing style rather
+than something these commits introduced.

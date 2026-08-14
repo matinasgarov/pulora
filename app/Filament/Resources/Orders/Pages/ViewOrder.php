@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Pages;
 
 use App\Domain\Money;
+use App\Domain\Order\Models\OrderItem;
 use App\Domain\Order\OrderStatus;
 use App\Filament\Actions\TransitionActions;
 use App\Filament\Resources\Orders\OrderResource;
@@ -62,17 +63,19 @@ class ViewOrder extends ViewRecord
                             TextEntry::make('unit_price_minor')
                                 ->label('Unit price')
                                 ->formatStateUsing(fn (int $state) => Money::format($state)),
+                            // Filament flattens an array state and renders each
+                            // value separately, which drops the keys: an operator
+                            // seeing "MA, yes" cannot tell the monogram from the
+                            // gift wrap, and cuts the wrong thing. Joining to one
+                            // string up front keeps every label attached to its
+                            // value, matching the workshop card's headline style.
                             TextEntry::make('personalization')
                                 ->label('Personalization')
-                                ->formatStateUsing(function (mixed $state) {
-                                    if (is_array($state)) {
-                                        return filled($state)
-                                            ? collect($state)->map(fn ($value, $key) => "{$key}: {$value}")->implode(', ')
-                                            : '—';
-                                    }
-
-                                    return filled($state) ? (string) $state : '—';
-                                }),
+                                ->state(fn (OrderItem $record) => filled($record->personalization)
+                                    ? collect($record->personalization)
+                                        ->map(fn ($value, $key) => str($key)->headline().': '.$value)
+                                        ->implode(', ')
+                                    : '—'),
                         ])
                         ->columns(5),
                 ]),

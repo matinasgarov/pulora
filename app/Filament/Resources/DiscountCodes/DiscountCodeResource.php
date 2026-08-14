@@ -69,13 +69,19 @@ class DiscountCodeResource extends Resource
                 // as a string, so 'fixed' is checked in minor units below,
                 // while 'percent' keeps the simple numeric minValue.
                 ->minValue(fn (Get $get) => $get('kind') === 'percent' ? 1 : null)
-                ->rule(fn (Get $get) => $get('kind') === 'fixed'
-                    ? function (string $attribute, $value, \Closure $fail) {
+                // Wrapped in an outer closure because Filament *evaluates* a
+                // Closure passed as $rule; the inner closure is the actual
+                // validation callable. `condition:` gates the rule instead of
+                // returning null, which would only work by way of Laravel's
+                // parser tolerating a null rule.
+                ->rule(
+                    fn () => function (string $attribute, $value, \Closure $fail) {
                         if ((MoneyInput::toMinor($value) ?? 0) < 1) {
                             $fail('The amount must be at least 0.01 AZN.');
                         }
-                    }
-                    : null)
+                    },
+                    condition: fn (Get $get) => $get('kind') === 'fixed',
+                )
                 ->maxValue(fn (Get $get) => $get('kind') === 'percent' ? 100 : null)
                 ->formatStateUsing(fn (?int $state, Get $get) => $get('kind') === 'fixed'
                     ? MoneyInput::toManats($state)

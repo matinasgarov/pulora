@@ -49,10 +49,9 @@ it('shows the snapshot line items and the personalization', function () {
         ->assertSee($this->order->order_number);
 });
 
-// Filament flattens an array state and calls formatStateUsing once per value,
-// so the operator sees each value but never its key. What matters is that a
-// second personalization option cannot go unnoticed on the workshop floor.
-it('shows every value of a multi-key personalization', function () {
+// An operator reading "MA, yes" cannot tell the monogram from the gift wrap and
+// cuts the wrong thing, so each value must stay attached to its own label.
+it('labels every key of a multi-key personalization', function () {
     $order = Order::factory()->create([
         'status' => OrderStatus::Paid,
         'paid_at' => now()->subDays(2),
@@ -65,8 +64,8 @@ it('shows every value of a multi-key personalization', function () {
     ]);
 
     livewire(ViewOrder::class, ['record' => $order->getKey()])
-        ->assertSee('MA')
-        ->assertSee('yes');
+        ->assertSee('Monogram: MA')
+        ->assertSee('Gift Wrap: yes');
 });
 
 it('shows the snapshot name even after the product is renamed', function () {
