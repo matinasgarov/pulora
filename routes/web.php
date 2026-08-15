@@ -28,7 +28,7 @@ Route::prefix('{locale}')
     ->name('storefront.')
     ->group(function () {
         // Tasks 5-8 replace each closure with its controller.
-        Route::get('/', fn () => response('catalogue'))->name('catalogue');
+        Route::get('/', fn () => view('storefront.placeholder'))->name('catalogue');
         Route::get('/product/{slug}', fn () => response('product'))->name('product');
         Route::get('/cart', fn () => response('cart'))->name('cart');
         Route::get('/checkout', fn () => response('checkout'))->name('checkout');

@@ -1,6 +1,7 @@
 <?php // lang/en/shop.php
 
 return [
+    'announcement' => 'Every piece is made to order in Baku',
     'nav' => [
         'catalogue' => 'Shop',
         'cart' => 'Cart',

@@ -1,6 +1,118 @@
 {
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-400-normal.woff": {
+    "file": "assets/eb-garamond-cyrillic-400-normal-C0kVTdou.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-400-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-400-normal-DDLP67lu.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-500-normal.woff": {
+    "file": "assets/eb-garamond-cyrillic-500-normal-CLHyttEY.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-500-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-500-normal-c5LjvaqX.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-400-normal.woff": {
+    "file": "assets/eb-garamond-cyrillic-ext-400-normal-DG8lny6_.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-400-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-ext-400-normal-o8fRvAFQ.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-500-normal.woff": {
+    "file": "assets/eb-garamond-cyrillic-ext-500-normal-I3TfTkSf.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-500-normal.woff2": {
+    "file": "assets/eb-garamond-cyrillic-ext-500-normal-DcO3I2lp.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-cyrillic-ext-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-400-normal.woff": {
+    "file": "assets/eb-garamond-greek-400-normal-d4JlP2QH.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-400-normal.woff2": {
+    "file": "assets/eb-garamond-greek-400-normal-CVAbzS9p.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-500-normal.woff": {
+    "file": "assets/eb-garamond-greek-500-normal-BjSCMh1N.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-500-normal.woff2": {
+    "file": "assets/eb-garamond-greek-500-normal-BtA0fbXC.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-400-normal.woff": {
+    "file": "assets/eb-garamond-greek-ext-400-normal-BaZl8BIK.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-400-normal.woff2": {
+    "file": "assets/eb-garamond-greek-ext-400-normal-K8pwR3tn.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-500-normal.woff": {
+    "file": "assets/eb-garamond-greek-ext-500-normal-CMJ7zNBO.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-500-normal.woff2": {
+    "file": "assets/eb-garamond-greek-ext-500-normal-DkhmZW4r.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-greek-ext-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff": {
+    "file": "assets/eb-garamond-latin-400-normal-maQnHeKB.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff2": {
+    "file": "assets/eb-garamond-latin-400-normal-BCNrxLz_.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-500-normal.woff": {
+    "file": "assets/eb-garamond-latin-500-normal-DZU8xF9o.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-500-normal.woff2": {
+    "file": "assets/eb-garamond-latin-500-normal-DehAIUv0.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-normal.woff": {
+    "file": "assets/eb-garamond-latin-ext-400-normal-B4EmgUmt.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-normal.woff2": {
+    "file": "assets/eb-garamond-latin-ext-400-normal-o4A__6QZ.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-normal.woff": {
+    "file": "assets/eb-garamond-latin-ext-500-normal-obw7ZvB_.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-normal.woff2": {
+    "file": "assets/eb-garamond-latin-ext-500-normal-BFuc0jzo.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-400-normal.woff": {
+    "file": "assets/eb-garamond-vietnamese-400-normal-ifvNSiWx.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-400-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-400-normal.woff2": {
+    "file": "assets/eb-garamond-vietnamese-400-normal-CLvJdMEL.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-400-normal.woff2"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-500-normal.woff": {
+    "file": "assets/eb-garamond-vietnamese-500-normal-B0TRhMco.woff",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-500-normal.woff"
+  },
+  "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-500-normal.woff2": {
+    "file": "assets/eb-garamond-vietnamese-500-normal-BCT1_K6u.woff2",
+    "src": "node_modules/@fontsource/eb-garamond/files/eb-garamond-vietnamese-500-normal.woff2"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CAlEqv_4.css",
+    "file": "assets/app-BOaroids.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },

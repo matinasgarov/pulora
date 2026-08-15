@@ -1,6 +1,7 @@
 <?php // lang/az/shop.php
 
 return [
+    'announcement' => 'Hər parça Bakıda sifarişlə hazırlanır',
     'nav' => [
         'catalogue' => 'Mağaza',
         'cart' => 'Səbət',

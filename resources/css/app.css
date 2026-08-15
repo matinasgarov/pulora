@@ -1,3 +1,6 @@
+@import '@fontsource/eb-garamond/400.css';
+@import '@fontsource/eb-garamond/500.css';
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -7,6 +10,34 @@
 @source "../**/*.vue";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Warm ivory, not white. The ground is what makes it read as premium. */
+    --color-ground: #f6f3ee;
+    /* A half-step deeper, so product photography on a neutral seamless
+       background blends into one continuous field. */
+    --color-tile: #edeae4;
+    --color-ink: #1a2238;
+    --color-muted: #6b6a66;
+    /* One accent, used rarely: wordmark, active nav, price. */
+    --color-accent: #8b3a2e;
+
+    --font-serif: 'EB Garamond', ui-serif, Georgia, serif;
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* The ground is low-contrast enough that the UA default focus ring disappears
+   on it. Every interactive element gets a visible one. */
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
