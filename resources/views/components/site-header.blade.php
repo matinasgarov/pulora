@@ -19,8 +19,7 @@
             <a href="{{ route('storefront.catalogue', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.catalogue') }}</a>
             <a href="{{ route('orders.lookup', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.orders') }}</a>
             <a href="{{ route('storefront.cart', absolute: false) }}" class="hover:text-accent">
-                {{ __('shop.nav.cart') }}
-                {{-- Task 7 replaces this with <livewire:cart-count /> --}}
+                {{ __('shop.nav.cart') }} <livewire:cart-count />
             </a>
             <a href="/{{ $otherLocale }}"
                hreflang="{{ $otherLocale }}"

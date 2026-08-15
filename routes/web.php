@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\Storefront\CatalogueController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Middleware\SetLocale;
+use App\Livewire\CartPage;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ Route::prefix('{locale}')
         // Task 8 replaces the remaining closure with its controller.
         Route::get('/', CatalogueController::class)->name('catalogue');
         Route::get('/product/{slug}', ProductController::class)->name('product');
-        Route::get('/cart', fn () => response('cart'))->name('cart');
+        Route::get('/cart', CartPage::class)->name('cart');
         Route::get('/checkout', fn () => response('checkout'))->name('checkout');
     });
 
