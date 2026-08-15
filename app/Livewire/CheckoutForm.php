@@ -6,6 +6,7 @@ use App\Domain\Cart\CartService;
 use App\Domain\Checkout\PlaceOrder;
 use App\Domain\Order\CustomerDetails;
 use App\Domain\Shipping\ShippingCalculator;
+use App\Http\Requests\CheckoutRequest;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -67,17 +68,15 @@ class CheckoutForm extends Component
 
     public function submit(PlaceOrder $placeOrder)
     {
-        // Mirror CheckoutRequest's rules. Read that class and reconcile any
-        // difference in its favour — it guards the POST route that Plan 1's
-        // tests cover.
-        $this->validate([
-            'email' => ['required', 'email'],
-            'name' => ['required', 'string', 'max:255'],
-            'address_line1' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:255'],
-            'country_code' => ['required', 'string', 'size:2'],
-            'shipping_rate_id' => ['required', 'integer'],
-        ]);
+        // The same rules as the POST route, not a copy of them. Copying drifted
+        // once already: this form was missing the length caps on phone,
+        // postcode and address_line2, which are string(255)/string(32) columns
+        // on a connection running in strict mode. An over-long address line
+        // reached Order::create() and died as an uncaught QueryException
+        // instead of a field error — and only on MySQL, so the SQLite suite
+        // could not see it. Two entry points, one implementation applies to the
+        // validation surface as much as to the write path.
+        $this->validate((new CheckoutRequest)->rules());
 
         $result = $placeOrder(
             new CustomerDetails(

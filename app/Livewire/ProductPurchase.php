@@ -66,14 +66,13 @@ class ProductPurchase extends Component
             // options. The storefront does not restate those rules.
             $cart->add($this->variantId, 1, array_filter($this->personalization));
         } catch (InvalidPersonalizationException $e) {
-            // The validator throws a single message per violation rather than a
-            // field map. Match it back to the offending option by its label
-            // (every message from PersonalizationValidator is prefixed with it)
-            // so the error can be attached to the right input.
-            $option = $this->product->personalizationOptions
-                ->first(fn ($o) => str_starts_with($e->getMessage(), $o->label));
-
-            $this->addError('personalization.'.($option->type ?? 'general'), $e->getMessage());
+            // The exception names the option it is about, so the error lands on
+            // the input the customer actually got wrong. Falling back to the
+            // group keeps a message on screen rather than a dead "Add to bag".
+            $this->addError(
+                $e->type ? "personalization.{$e->type}" : 'personalization',
+                $e->getMessage(),
+            );
 
             return;
         }

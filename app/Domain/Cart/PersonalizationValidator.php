@@ -19,7 +19,7 @@ class PersonalizationValidator
 
             if ($raw === '') {
                 if ($option->is_required) {
-                    throw new InvalidPersonalizationException("{$option->label} is required.");
+                    throw new InvalidPersonalizationException("{$option->label} is required.", $option->type);
                 }
                 continue;
             }
@@ -28,12 +28,13 @@ class PersonalizationValidator
 
             if (mb_strlen($value) > $option->max_characters) {
                 throw new InvalidPersonalizationException(
-                    "{$option->label} must be at most {$option->max_characters} characters."
+                    "{$option->label} must be at most {$option->max_characters} characters.",
+                    $option->type,
                 );
             }
 
             if (preg_match($option->allowed_pattern, $value) !== 1) {
-                throw new InvalidPersonalizationException("{$option->label} contains characters we cannot stamp.");
+                throw new InvalidPersonalizationException("{$option->label} contains characters we cannot stamp.", $option->type);
             }
 
             $result[$option->type] = $value;
