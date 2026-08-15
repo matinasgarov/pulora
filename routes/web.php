@@ -6,6 +6,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderLookupController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\Storefront\CatalogueController;
+use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
@@ -28,9 +29,9 @@ Route::prefix('{locale}')
     ->middleware('setlocale')
     ->name('storefront.')
     ->group(function () {
-        // Tasks 6-8 replace each remaining closure with its controller.
+        // Task 8 replaces the remaining closure with its controller.
         Route::get('/', CatalogueController::class)->name('catalogue');
-        Route::get('/product/{slug}', fn () => response('product'))->name('product');
+        Route::get('/product/{slug}', ProductController::class)->name('product');
         Route::get('/cart', fn () => response('cart'))->name('cart');
         Route::get('/checkout', fn () => response('checkout'))->name('checkout');
     });
