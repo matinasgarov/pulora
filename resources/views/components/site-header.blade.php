@@ -3,7 +3,9 @@
 @endphp
 
 <header class="border-b border-ink/10">
-    <div class="bg-ground py-2 text-center font-serif text-xs tracking-widest text-muted">
+    {{-- bg-tile, not bg-ground: on the ground colour this is indistinguishable
+         from the page and reads as a stray line of text rather than a bar. --}}
+    <div class="bg-tile py-2 text-center font-serif text-xs tracking-widest text-muted">
         {{ __('shop.announcement') }}
     </div>
 

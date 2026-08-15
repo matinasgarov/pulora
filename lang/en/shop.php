@@ -2,6 +2,9 @@
 
 return [
     'announcement' => 'Every piece is made to order in Baku',
+    'footer' => [
+        'city' => 'Baku',
+    ],
     'nav' => [
         'catalogue' => 'Shop',
         'cart' => 'Cart',

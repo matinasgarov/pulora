@@ -2,6 +2,9 @@
 
 return [
     'announcement' => 'Hər parça Bakıda sifarişlə hazırlanır',
+    'footer' => [
+        'city' => 'Bakı',
+    ],
     'nav' => [
         'catalogue' => 'Mağaza',
         'cart' => 'Səbət',
