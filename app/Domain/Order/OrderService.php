@@ -92,12 +92,13 @@ class OrderService
         CustomerDetails $customer,
         ShippingQuote $shipping,
         ?DiscountResult $discount = null,
+        ?string $locale = null,
     ): Order {
         if ($cart->isEmpty()) {
             throw new InsufficientStockException('Your cart is empty.');
         }
 
-        return DB::transaction(function () use ($cart, $customer, $shipping, $discount) {
+        return DB::transaction(function () use ($cart, $customer, $shipping, $discount, $locale) {
             $subtotal = $cart->subtotalMinor();
             $discountMinor = $discount?->amountMinor ?? 0;
 
@@ -118,6 +119,7 @@ class OrderService
                 'discount_minor' => $discountMinor,
                 'total_minor' => $subtotal - $discountMinor + $shipping->priceMinor,
                 'currency' => 'AZN',
+                'locale' => $locale,
                 'discount_code_id' => $discount?->codeId,
                 'shipping_rate_id' => $shipping->rateId,
                 'total_weight_grams' => $cart->totalWeightGrams(),

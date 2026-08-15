@@ -9,6 +9,7 @@ use App\Http\Controllers\Storefront\CatalogueController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Middleware\SetLocale;
 use App\Livewire\CartPage;
+use App\Livewire\CheckoutForm;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,11 +31,10 @@ Route::prefix('{locale}')
     ->middleware('setlocale')
     ->name('storefront.')
     ->group(function () {
-        // Task 8 replaces the remaining closure with its controller.
         Route::get('/', CatalogueController::class)->name('catalogue');
         Route::get('/product/{slug}', ProductController::class)->name('product');
         Route::get('/cart', CartPage::class)->name('cart');
-        Route::get('/checkout', fn () => response('checkout'))->name('checkout');
+        Route::get('/checkout', CheckoutForm::class)->name('checkout');
     });
 
 if (app()->environment(['local', 'testing'])) {
