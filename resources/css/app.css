@@ -16,7 +16,11 @@
        background blends into one continuous field. */
     --color-tile: #edeae4;
     --color-ink: #1a2238;
-    --color-muted: #6b6a66;
+    /* Dark enough to clear AA on BOTH grounds. At #6b6a66 this text was
+       4.51:1 on --color-tile — nine thousandths above the floor — because the
+       announcement bar sits on tile, not ground. Do not lighten it; the pairing
+       is pinned by ContrastTest. */
+    --color-muted: #5f5e5a;
     /* One accent, used rarely: wordmark, active nav, price. */
     --color-accent: #8b3a2e;
 

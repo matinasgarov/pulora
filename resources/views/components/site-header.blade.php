@@ -17,8 +17,8 @@
 
         <nav class="flex items-center gap-10 font-serif text-sm tracking-widest">
             <a href="{{ route('storefront.catalogue', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.catalogue') }}</a>
-            <a href="{{ route('orders.lookup') }}" class="hover:text-accent">{{ __('shop.nav.orders') }}</a>
-            <a href="{{ route('storefront.cart') }}" class="hover:text-accent">
+            <a href="{{ route('orders.lookup', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.orders') }}</a>
+            <a href="{{ route('storefront.cart', absolute: false) }}" class="hover:text-accent">
                 {{ __('shop.nav.cart') }}
                 {{-- Task 7 replaces this with <livewire:cart-count /> --}}
             </a>
