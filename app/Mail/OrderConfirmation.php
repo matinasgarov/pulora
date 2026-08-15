@@ -17,7 +17,9 @@ class OrderConfirmation extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Order {$this->order->order_number} confirmed");
+        app()->setLocale($this->order->locale ?? config('app.fallback_locale'));
+
+        return new Envelope(subject: __('shop.mail.confirmed_subject', ['number' => $this->order->order_number]));
     }
 
     public function content(): Content

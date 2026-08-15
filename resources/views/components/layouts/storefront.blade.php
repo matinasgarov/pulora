@@ -1,4 +1,4 @@
-@props(['title' => null])
+@props(['title' => null, 'liveCart' => true])
 
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
@@ -10,7 +10,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-ground font-sans text-ink antialiased">
-    <x-site-header />
+    <x-site-header :live-cart="$liveCart" />
 
     <main>
         {{ $slot }}

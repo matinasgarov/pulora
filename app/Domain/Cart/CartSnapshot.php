@@ -12,6 +12,12 @@ final readonly class CartSnapshot
         return array_sum(array_map(fn (CartLine $l) => $l->lineTotalMinor(), $this->lines));
     }
 
+    /** Pieces in the bag, not lines — two of one thing is a bag of two. */
+    public function totalQuantity(): int
+    {
+        return array_sum(array_map(fn (CartLine $l) => $l->quantity, $this->lines));
+    }
+
     public function totalWeightGrams(): int
     {
         return array_sum(array_map(fn (CartLine $l) => $l->weightGrams * $l->quantity, $this->lines));

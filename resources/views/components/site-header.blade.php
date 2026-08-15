@@ -1,3 +1,5 @@
+@props(['liveCart' => true])
+
 @php
     $otherLocale = app()->getLocale() === 'en' ? 'az' : 'en';
 @endphp
@@ -19,7 +21,20 @@
             <a href="{{ route('storefront.catalogue', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.catalogue') }}</a>
             <a href="{{ route('orders.lookup', absolute: false) }}" class="hover:text-accent">{{ __('shop.nav.orders') }}</a>
             <a href="{{ route('storefront.cart', absolute: false) }}" class="hover:text-accent">
-                {{ __('shop.nav.cart') }} <livewire:cart-count />
+                {{ __('shop.nav.cart') }}
+                {{-- A Livewire component embeds a per-render id and snapshot, so
+                     two responses for the same state are never byte-identical.
+                     OrderLookupTest requires exactly that of the lookup pages:
+                     a wrong email and an unknown order number must be
+                     indistinguishable, or the form becomes an oracle for
+                     enumerating order numbers. Those pages therefore render the
+                     count statically. Nothing on them mutates the cart, so
+                     nothing is lost by not being live. --}}
+                @if ($liveCart)
+                    <livewire:cart-count />
+                @else
+                    <span>({{ app(\App\Domain\Cart\CartService::class)->snapshot()->totalQuantity() }})</span>
+                @endif
             </a>
             <a href="/{{ $otherLocale }}"
                hreflang="{{ $otherLocale }}"

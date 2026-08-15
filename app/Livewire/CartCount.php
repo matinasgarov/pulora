@@ -11,10 +11,7 @@ class CartCount extends Component
     public function render(CartService $cart)
     {
         return view('livewire.cart-count', [
-            'count' => array_sum(array_map(
-                fn ($line) => $line->quantity,
-                $cart->snapshot()->lines
-            )),
+            'count' => $cart->snapshot()->totalQuantity(),
         ]);
     }
 

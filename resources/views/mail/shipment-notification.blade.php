@@ -1,14 +1,14 @@
 <x-mail::message>
-# Your order is on its way
+# {{ __('shop.mail.shipped', ['number' => $order->order_number]) }}
 
-Hello {{ $order->customer_name }},
+{{ __('shop.mail.shipped_greeting', ['name' => $order->customer_name]) }}
 
-Order **{{ $order->order_number }}** has been posted.
+{{ __('shop.mail.shipped_posted', ['number' => $order->order_number]) }}
 
-Tracking number: **{{ $order->tracking_number }}**
+{{ __('shop.mail.tracking_number', ['tracking' => $order->tracking_number]) }}
 
-Thank you for buying something made by hand.
+{{ __('shop.mail.shipped_thanks') }}
 
-Thanks,<br>
+{{ __('shop.mail.thanks') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

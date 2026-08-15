@@ -17,7 +17,9 @@ class ShipmentNotification extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Order {$this->order->order_number} is on its way");
+        app()->setLocale($this->order->locale ?? config('app.fallback_locale'));
+
+        return new Envelope(subject: __('shop.mail.shipped', ['number' => $this->order->order_number]));
     }
 
     public function content(): Content

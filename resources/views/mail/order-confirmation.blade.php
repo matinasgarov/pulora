@@ -1,24 +1,24 @@
 {{-- resources/views/mail/order-confirmation.blade.php --}}
 @component('mail::message')
-# Thank you, {{ $order->customer_name }}
+# {{ __('shop.mail.thank_you', ['name' => $order->customer_name]) }}
 
-We have received your order **{{ $order->order_number }}** and started work on it.
+{{ __('shop.mail.received', ['number' => $order->order_number]) }}
 
 @component('mail::table')
-| Item | Qty | Price |
+| {{ __('shop.mail.item') }} | {{ __('shop.mail.qty') }} | {{ __('shop.mail.price') }} |
 |:-----|:---:|------:|
 @foreach ($order->items as $item)
 | {{ $item->product_name }} — {{ $item->variant_description }}@if($item->personalization) ({{ implode(', ', $item->personalization) }})@endif | {{ $item->quantity }} | {{ \App\Domain\Money::format($item->line_total_minor) }} |
 @endforeach
 @endcomponent
 
-Shipping: {{ \App\Domain\Money::format($order->shipping_minor) }}
+{{ __('shop.mail.shipping') }}: {{ \App\Domain\Money::format($order->shipping_minor) }}
 @if ($order->discount_minor > 0)
-Discount: −{{ \App\Domain\Money::format($order->discount_minor) }}
+{{ __('shop.mail.discount') }}: −{{ \App\Domain\Money::format($order->discount_minor) }}
 @endif
-**Total: {{ \App\Domain\Money::format($order->total_minor) }}**
+**{{ __('shop.mail.total') }}: {{ \App\Domain\Money::format($order->total_minor) }}**
 
-Track your order any time with your email address and order number.
+{{ __('shop.mail.track') }}
 
-Thanks,<br>{{ config('app.name') }}
+{{ __('shop.mail.thanks') }}<br>{{ config('app.name') }}
 @endcomponent
