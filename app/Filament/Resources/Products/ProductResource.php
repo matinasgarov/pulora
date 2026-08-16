@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Products;
 
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\ProductCategory;
+use App\Domain\Catalog\ProductTag;
 use App\Domain\Money;
 use App\Domain\Order\Models\OrderItem;
 use App\Filament\Resources\Products\Pages\CreateProduct;
@@ -67,12 +69,65 @@ class ProductResource extends Resource
                     Textarea::make('story_en')->label('Story (English)')->rows(4),
                     Textarea::make('story_az')->label('Story (Azərbaycan)')->rows(4),
 
+                    TextInput::make('leather_en')
+                        ->label('Leather (English)')
+                        ->helperText('The label shown under the product name, e.g. "Vegetable-tanned · Natural".'),
+                    TextInput::make('leather_az')
+                        ->label('Leather (Azərbaycan)')
+                        ->helperText('Leave blank to fall back to English.'),
+
+                    Select::make('category')
+                        ->label('Category')
+                        ->options(array_combine(
+                            array_map(fn (ProductCategory $c) => $c->value, ProductCategory::cases()),
+                            array_map(fn (ProductCategory $c) => $c->label(), ProductCategory::cases()),
+                        )),
+
+                    // Operator-set, not derived from stock_quantity: that
+                    // column is a production capacity cap the operator sets
+                    // for a different purpose, and deriving "Az qalıb" from
+                    // it would make the badge lie about the number.
+                    Select::make('tag')
+                        ->label('Tag')
+                        ->helperText('Operator-set merchandising badge — not derived from stock quantity.')
+                        // Most products carry no badge, so the placeholder
+                        // must be a selectable, empty option — not just a
+                        // hint — which is what leaving `required()` off a
+                        // native Filament select gives for free.
+                        ->placeholder('None')
+                        ->options(array_combine(
+                            array_map(fn (ProductTag $t) => $t->value, ProductTag::cases()),
+                            array_map(fn (ProductTag $t) => $t->label(), ProductTag::cases()),
+                        )),
+
                     MoneyInput::field('base_price_minor')
                         ->label('Price')
                         ->required(),
 
                     TextInput::make('lead_time_days')->numeric()->minValue(0)->default(3),
                     Toggle::make('is_active')->default(true),
+                ]),
+
+                Tabs\Tab::make('Specs')->schema([
+                    Repeater::make('specs_en')
+                        ->label('Spec table (English)')
+                        ->schema([
+                            TextInput::make('label')->required()->placeholder('Size'),
+                            TextInput::make('value')->required()->placeholder('11 × 9 cm'),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add row'),
+
+                    Repeater::make('specs_az')
+                        ->label('Spec table (Azərbaycan)')
+                        ->schema([
+                            TextInput::make('label')->required()->placeholder('Ölçü'),
+                            TextInput::make('value')->required()->placeholder('11 × 9 sm'),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add row'),
                 ]),
 
                 Tabs\Tab::make('Images')->schema([

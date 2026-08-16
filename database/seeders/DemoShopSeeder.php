@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Domain\Catalog\Models\PersonalizationOption;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\Variant;
+use App\Domain\Catalog\ProductCategory;
+use App\Domain\Catalog\ProductTag;
 use App\Domain\Discount\Models\DiscountCode;
 use App\Domain\Shipping\Models\ShippingRate;
 use App\Domain\Shipping\Models\ShippingZone;
@@ -28,21 +30,105 @@ class DemoShopSeeder extends Seeder
         }
 
         $catalog = [
-            ['Bifold wallet', 8900, ['Cognac', 'Black', 'Natural']],
-            ['Card holder', 4900, ['Cognac', 'Olive', 'Black']],
-            ['Long wallet', 12900, ['Black', 'Natural']],
+            [
+                'name' => ['en' => 'Bifold wallet', 'az' => 'Bifold No.3'],
+                'leather' => ['en' => 'Vegetable-tanned · Natural', 'az' => 'Bitkisel aşılanmış · Natural'],
+                'category' => ProductCategory::Wallet,
+                'tag' => ProductTag::New,
+                'price' => 8900,
+                'colours' => ['Cognac', 'Black', 'Natural'],
+                'specs' => [
+                    'en' => [
+                        ['label' => 'Size', 'value' => '11 × 9 cm'],
+                        ['label' => 'Card slots', 'value' => '6'],
+                        ['label' => 'Stitching', 'value' => 'Saddle stitch, waxed linen'],
+                        ['label' => 'Lining', 'value' => 'Unlined'],
+                        ['label' => 'Made to order', 'value' => '5 business days'],
+                    ],
+                    'az' => [
+                        ['label' => 'Ölçü', 'value' => '11 × 9 sm'],
+                        ['label' => 'Kart yuvası', 'value' => '6'],
+                        ['label' => 'Tikiş', 'value' => 'Sarrac tikişi, mumlu keten'],
+                        ['label' => 'Astar', 'value' => 'Astarsız'],
+                        ['label' => 'Hazırlanma', 'value' => '5 iş günü'],
+                    ],
+                ],
+            ],
+            [
+                'name' => ['en' => 'Card holder', 'az' => 'Kart qabı No.1'],
+                'leather' => ['en' => 'Calfskin · Dark brown', 'az' => 'Buzov · Tünd qəhvəyi'],
+                'category' => ProductCategory::Card,
+                'tag' => ProductTag::LowStock,
+                'price' => 4900,
+                'colours' => ['Cognac', 'Olive', 'Black'],
+                'specs' => [
+                    'en' => [
+                        ['label' => 'Size', 'value' => '9.5 × 6.5 cm'],
+                        ['label' => 'Card slots', 'value' => '4'],
+                        ['label' => 'Stitching', 'value' => 'Saddle stitch, waxed linen'],
+                        ['label' => 'Lining', 'value' => 'Unlined'],
+                        ['label' => 'Made to order', 'value' => '5 business days'],
+                    ],
+                    'az' => [
+                        ['label' => 'Ölçü', 'value' => '9.5 × 6.5 sm'],
+                        ['label' => 'Kart yuvası', 'value' => '4'],
+                        ['label' => 'Tikiş', 'value' => 'Sarrac tikişi, mumlu keten'],
+                        ['label' => 'Astar', 'value' => 'Astarsız'],
+                        ['label' => 'Hazırlanma', 'value' => '5 iş günü'],
+                    ],
+                ],
+            ],
+            [
+                'name' => ['en' => 'Long wallet', 'az' => 'Uzun cüzdan No.2'],
+                'leather' => ['en' => 'Shell cordovan · Cognac', 'az' => 'Shell cordovan · Konyak'],
+                'category' => ProductCategory::Wallet,
+                'tag' => null,
+                'price' => 12900,
+                'colours' => ['Black', 'Natural'],
+                'specs' => [
+                    'en' => [
+                        ['label' => 'Size', 'value' => '19 × 10 cm'],
+                        ['label' => 'Card slots', 'value' => '8'],
+                        ['label' => 'Stitching', 'value' => 'Saddle stitch, waxed linen'],
+                        ['label' => 'Lining', 'value' => 'Full leather lining'],
+                        ['label' => 'Made to order', 'value' => '5 business days'],
+                    ],
+                    'az' => [
+                        ['label' => 'Ölçü', 'value' => '19 × 10 sm'],
+                        ['label' => 'Kart yuvası', 'value' => '8'],
+                        ['label' => 'Tikiş', 'value' => 'Sarrac tikişi, mumlu keten'],
+                        ['label' => 'Astar', 'value' => 'Tam dəri astar'],
+                        ['label' => 'Hazırlanma', 'value' => '5 iş günü'],
+                    ],
+                ],
+            ],
         ];
 
-        foreach ($catalog as [$name, $price, $colours]) {
+        foreach ($catalog as $item) {
+            $slug = str($item['name']['en'])->slug()->toString();
+
             $product = Product::create([
-                'name' => $name,
-                'slug' => str($name)->slug()->toString(),
-                'description' => 'Hand-cut, hand-stitched, and finished in our Baku workshop.',
-                'story' => 'Made from full-grain vegetable-tanned leather that darkens with use.',
-                'base_price_minor' => $price,
+                'name' => $item['name'],
+                'slug' => $slug,
+                'description' => [
+                    'en' => 'Hand-cut, hand-stitched, and finished in our Baku workshop.',
+                    'az' => 'Bakı emalatxanamızda əl ilə kəsilir, tikilir və hazırlanır.',
+                ],
+                'story' => [
+                    'en' => 'Made from full-grain vegetable-tanned leather that darkens with use.',
+                    'az' => 'İstifadə ilə tündləşən tam dənəli, bitkisel aşılanmış dəridən hazırlanıb.',
+                ],
+                'leather' => $item['leather'],
+                'category' => $item['category']->value,
+                'tag' => $item['tag']?->value,
+                'specs' => $item['specs'],
+                'base_price_minor' => $item['price'],
                 'lead_time_days' => 5,
                 'is_active' => true,
             ]);
+
+            $name = $item['name']['en'];
+            $colours = $item['colours'];
 
             foreach ($colours as $i => $colour) {
                 Variant::create([
