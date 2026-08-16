@@ -12,6 +12,10 @@
 <body class="min-h-screen bg-ground font-sans text-ink antialiased">
     <x-site-header :live-cart="$liveCart" />
 
+    {{-- Sibling of <header>, not a child of it — see the component's own
+         comment for why. --}}
+    <x-nav-drawer />
+
     <main>
         {{ $slot }}
     </main>

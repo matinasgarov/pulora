@@ -31,6 +31,6 @@ it('links the wordmark to the catalogue in the current locale', function () {
 // The announcement bar said "Bakıda" while the footer two hundred pixels below
 // said "Baku" — the same city, one localised and one not, on one page.
 it('localises the city in the footer', function () {
-    $this->get('/az')->assertSee('Pulora — Bakı');
-    $this->get('/en')->assertSee('Pulora — Baku');
+    $this->get('/az')->assertSee('Bakı, Səbail');
+    $this->get('/en')->assertSee('Baku, Sabail');
 });

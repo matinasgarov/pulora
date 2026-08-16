@@ -2,13 +2,47 @@
 
 return [
     'announcement' => 'Every piece is made to order in Baku',
-    'footer' => [
-        'city' => 'Baku',
-    ],
     'nav' => [
         'catalogue' => 'Shop',
         'cart' => 'Cart',
-        'orders' => 'Find your order',
+        'orders' => 'Order',
+        'atelier' => 'Atelier',
+        'language' => 'Language',
+        'menu' => 'Menu',
+        'search' => 'Search',
+        'close' => 'Close',
+    ],
+    'search' => [
+        'placeholder' => 'Search products — wallet, card case, cordovan…',
+        'note' => 'Search is coming soon.',
+    ],
+    'footer' => [
+        'city' => 'Baku',
+        'headings' => [
+            'shop' => 'Shop',
+            'service' => 'Service',
+            'contact' => 'Contact',
+        ],
+        'brand' => [
+            'tagline' => 'Leather atelier',
+            'address' => 'Baku, Sabail',
+            'hours' => 'Mon — Sat, 11:00—19:00',
+            'craft' => 'Vegetable-tanned leather, saddle stitching, repaired for life.',
+        ],
+        'links' => [
+            'all_products' => 'All products',
+            'wallets' => 'Wallets',
+            'card_holders' => 'Card holders',
+            'shipping' => 'Shipping',
+            'returns' => 'Returns',
+        ],
+        'contact' => [
+            'email' => 'salam@pulora.az',
+        ],
+        'legal' => [
+            'copyright' => '© 2026 Pulora',
+            'made_in' => 'Made in Baku',
+        ],
     ],
     'product' => [
         'add_to_cart' => 'Add to bag',

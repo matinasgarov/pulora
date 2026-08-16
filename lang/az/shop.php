@@ -2,13 +2,47 @@
 
 return [
     'announcement' => 'Hər parça Bakıda sifarişlə hazırlanır',
-    'footer' => [
-        'city' => 'Bakı',
-    ],
     'nav' => [
         'catalogue' => 'Mağaza',
         'cart' => 'Səbət',
-        'orders' => 'Sifarişinizi tapın',
+        'orders' => 'Sifariş',
+        'atelier' => 'Atelye',
+        'language' => 'Dil',
+        'menu' => 'Menyu',
+        'search' => 'Axtar',
+        'close' => 'Bağla',
+    ],
+    'search' => [
+        'placeholder' => 'Məhsul axtarın — cüzdan, kart qabı, cordovan…',
+        'note' => 'Axtarış tezliklə aktivləşəcək.',
+    ],
+    'footer' => [
+        'city' => 'Bakı',
+        'headings' => [
+            'shop' => 'Mağaza',
+            'service' => 'Xidmət',
+            'contact' => 'Əlaqə',
+        ],
+        'brand' => [
+            'tagline' => 'Dəri atelyesi',
+            'address' => 'Bakı, Səbail',
+            'hours' => 'B. e. — şənbə, 11:00—19:00',
+            'craft' => 'Bitkisel aşılanmış dəri, yəhər tikişi, ömürlük təmir.',
+        ],
+        'links' => [
+            'all_products' => 'Bütün məhsullar',
+            'wallets' => 'Pulqablar',
+            'card_holders' => 'Kart qabları',
+            'shipping' => 'Çatdırılma',
+            'returns' => 'Qaytarma',
+        ],
+        'contact' => [
+            'email' => 'salam@pulora.az',
+        ],
+        'legal' => [
+            'copyright' => '© 2026 Pulora',
+            'made_in' => 'Bakıda hazırlanıb',
+        ],
     ],
     'product' => [
         'add_to_cart' => 'Səbətə əlavə et',
