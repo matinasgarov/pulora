@@ -58,9 +58,33 @@ ground, measured:
 
 | Token | Handoff | Ratio | Used for | This plan |
 |---|---|---|---|---|
-| Muted light | `#8E857A` | 3.45:1 | labels, captions, inactive nav | `#7A7166` (4.9:1) |
+| Muted light | `#8E857A` | 3.45:1 | labels, captions, inactive nav | `#7A7166` (**4.55:1**) |
 | Muted lighter | `#A79E92` | 2.51:1 | inactive tabs, legal line | `#8A8175` (4.0:1 — large/UI only) |
 | Muted lightest | `#B4AB9E` | 2.15:1 | input placeholders | `#958C80` (3.4:1) |
+
+**Correction.** An earlier draft of this table claimed `#7A7166` measured 4.9:1.
+It measures **4.55:1**. The arithmetic was wrong, not the colour.
+
+`#736A60` would clear 5.0, but it lands within 0.4 of `--color-muted` (5.43:1)
+and collapses the distinction the two tokens exist to express, so `#7A7166`
+stands.
+
+### Which floor applies to what
+
+Plan 2B introduced a 5.0:1 house floor — deliberately above WCAG's 4.5 — because
+a threshold the palette only just clears is not a guard. That reasoning holds for
+tokens **we** choose. It does not extend to tokens the **design supplies**:
+holding a client's brand accent to a stricter-than-legal bar and quietly
+darkening it substitutes our judgment for the designer's.
+
+So `ContrastTest` enforces two floors, per pairing:
+
+- **5.0:1** for `ink`, `ink-soft` and `muted` — the workhorse text colours.
+- **4.5:1 (real WCAG AA)** for `accent` (`#8A6A4B`, 4.70:1) and `muted-light`
+  (4.55:1) — design-supplied intent that meets the actual standard.
+
+The three greys above were still darkened, because those genuinely failed the
+real standard rather than merely missing a house preference.
 
 These are set at 10–11px uppercase with wide letter-spacing, which is the
 hardest case to read there is. The hierarchy between them is preserved; each is
