@@ -1,6 +1,6 @@
 <x-layouts.storefront :title="__('shop.catalogue.title')">
     @if ($products->isEmpty())
-        <div class="px-6 py-32 text-center font-serif text-lg tracking-wide text-muted">
+        <div class="px-6 py-32 text-center font-display text-lg tracking-wide text-muted">
             {{ __('shop.catalogue.empty') }}
         </div>
     @else

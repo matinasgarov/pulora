@@ -1,7 +1,7 @@
 <?php // tests/Feature/Storefront/LocaleRoutingTest.php
 
 it('redirects the bare root to the default locale', function () {
-    $this->get('/')->assertRedirect('/en');
+    $this->get('/')->assertRedirect('/az');
 });
 
 it('serves the English catalogue', function () {

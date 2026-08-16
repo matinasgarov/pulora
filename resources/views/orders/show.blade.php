@@ -2,7 +2,7 @@
      byte-identical-response reason and because nothing here mutates the cart. --}}
 <x-layouts.storefront :title="__('shop.orders.order_heading', ['number' => $order->order_number])" :live-cart="false">
     <div class="mx-auto max-w-3xl px-6 py-16">
-        <h1 class="font-serif text-3xl tracking-wide">
+        <h1 class="font-display text-3xl tracking-wide">
             {{ __('shop.orders.order_heading', ['number' => $order->order_number]) }}
         </h1>
 
@@ -20,7 +20,7 @@
             @foreach ($order->items as $item)
                 <li class="flex items-start justify-between py-6">
                     <div>
-                        <p class="font-serif text-base">
+                        <p class="font-display text-base">
                             {{ $item->product_name }} — {{ $item->variant_description }}
                         </p>
 
@@ -35,7 +35,7 @@
                         </p>
                     </div>
 
-                    <p class="font-serif text-base"><x-price :minor="$item->line_total_minor" /></p>
+                    <p class="font-display text-base"><x-price :minor="$item->line_total_minor" /></p>
                 </li>
             @endforeach
         </ul>
@@ -58,7 +58,7 @@
                 </div>
             @endif
 
-            <div class="flex items-center justify-between border-t border-ink/10 pt-4 font-serif text-lg">
+            <div class="flex items-center justify-between border-t border-ink/10 pt-4 font-display text-lg">
                 <span>{{ __('shop.orders.total') }}</span>
                 <x-price :minor="$order->total_minor" />
             </div>

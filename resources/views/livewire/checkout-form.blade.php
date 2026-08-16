@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-serif text-3xl tracking-wide">{{ __('shop.checkout.title') }}</h1>
+    <h1 class="font-display text-3xl tracking-wide">{{ __('shop.checkout.title') }}</h1>
 
     <form wire:submit="submit" class="mt-12 space-y-6">
         <div>
@@ -109,12 +109,12 @@
         @error('payment') <p class="font-sans text-xs text-accent">{{ $message }}</p> @enderror
 
         <div class="flex items-center justify-between border-t border-ink/10 pt-6">
-            <span class="font-serif text-lg">{{ __('shop.checkout.total') }}</span>
-            <span class="font-serif text-lg"><x-price :minor="$totalMinor" /></span>
+            <span class="font-display text-lg">{{ __('shop.checkout.total') }}</span>
+            <span class="font-display text-lg"><x-price :minor="$totalMinor" /></span>
         </div>
 
         <button type="submit"
-                class="mt-4 block w-full bg-ink px-6 py-4 text-center font-serif text-sm tracking-widest text-ground hover:bg-accent">
+                class="mt-4 block w-full bg-ink px-6 py-4 text-center font-display text-sm tracking-widest text-ground hover:bg-accent">
             {{ __('shop.checkout.place_order') }}
         </button>
     </form>

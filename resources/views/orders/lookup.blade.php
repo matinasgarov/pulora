@@ -1,6 +1,6 @@
 <x-layouts.storefront :title="__('shop.orders.find_title')" :live-cart="false">
     <div class="mx-auto max-w-lg px-6 py-16">
-        <h1 class="font-serif text-3xl tracking-wide">{{ __('shop.orders.find_title') }}</h1>
+        <h1 class="font-display text-3xl tracking-wide">{{ __('shop.orders.find_title') }}</h1>
 
         @if (! empty($notFound))
             <p class="mt-6 border border-accent/40 px-4 py-3 font-sans text-sm text-accent">
@@ -35,7 +35,7 @@
             @endif
 
             <button type="submit"
-                    class="block w-full bg-ink px-6 py-4 text-center font-serif text-sm tracking-widest text-ground hover:bg-accent">
+                    class="block w-full bg-ink px-6 py-4 text-center font-display text-sm tracking-widest text-ground hover:bg-accent">
                 {{ __('shop.orders.find_submit') }}
             </button>
         </form>
