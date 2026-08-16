@@ -47,10 +47,19 @@ return [
         ],
     ],
     'product' => [
-        'add_to_cart' => 'Səbətə əlavə et',
+        'add_to_cart' => 'Səbətə at',
         'unavailable' => 'Hazırda mövcud deyil',
         'made_to_order' => 'Sifarişlə hazırlanır — :days gün ərzində göndərilir',
         'personalization' => 'Fərdiləşdirmə',
+        'colour' => 'Rəng',
+        'bespoke_cta' => 'Bunu sifarişlə hazırlat',
+        'trust' => [
+            'Bakıda əllə hazırlanır — anbardan deyil, dəzgahdan',
+            'Səbaildən pulsuz götürmə, şəhərdaxili 1 gün',
+            'Ömürlük tikiş və kənar boyası təmiri',
+            '14 gün ərzində istifadəsiz geri qaytarma',
+        ],
+        'related' => 'Bunlar da uyğun gələ bilər',
     ],
     'cart' => [
         'title' => 'Səbətiniz',
@@ -86,6 +95,12 @@ return [
         'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
         'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
         'tile' => ':name — product photography pending, 1600×2000',
+        'gallery' => [
+            'hero' => ':name — hero shot, natural light, 1600×1600',
+            'edge_paint' => ':name — edge paint macro, 1600×1600',
+            'interior' => ':name — interior card slots, 1600×1600',
+            'in_hand' => ':name — in-hand scale reference, 2400×1600',
+        ],
     ],
     'hero' => [
         'line1' => 'Bir dəri.',

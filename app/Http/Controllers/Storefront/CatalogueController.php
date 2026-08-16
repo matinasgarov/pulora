@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Domain\Catalog\BespokeCta;
 use App\Domain\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
@@ -31,16 +32,13 @@ class CatalogueController extends Controller
             ->get();
 
         // The bespoke CTA points at a real product page until Phase 3 builds
-        // the configurator (see the design plan, Task 4). Falls back to the
-        // collection anchor on an empty catalogue rather than a broken link.
-        $bespokeCtaHref = $products->isNotEmpty()
-            ? route('storefront.product', ['slug' => $products->first()->slug], absolute: false)
-            : route('storefront.catalogue', absolute: false).'#shop';
-
+        // the configurator (see the design plan, Task 4 and Task 5). Shared
+        // with the product page's own bespoke CTA via BespokeCta::href() so
+        // both point at the same place.
         return view('storefront.catalogue', [
             'products' => $products,
             'bespokeStartingPriceMinor' => self::BESPOKE_STARTING_PRICE_MINOR,
-            'bespokeCtaHref' => $bespokeCtaHref,
+            'bespokeCtaHref' => BespokeCta::href(),
         ]);
     }
 }

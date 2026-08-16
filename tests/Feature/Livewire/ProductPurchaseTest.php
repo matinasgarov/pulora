@@ -90,3 +90,28 @@ it('refuses to add a variant with no remaining capacity', function () {
 
     expect(app(CartService::class)->snapshot()->lines)->toBeEmpty();
 });
+
+it('renders a colour swatch for a variant whose description is a known leather colour', function () {
+    $this->variant->update(['description' => 'Cognac']);
+
+    livewire(ProductPurchase::class, ['product' => $this->product->fresh()])
+        ->assertSee('#a3612f', false);
+});
+
+it('falls back to a labelled text button for a variant colour it does not recognise', function () {
+    $this->variant->update(['description' => 'Shell cordovan']);
+
+    livewire(ProductPurchase::class, ['product' => $this->product->fresh()])
+        ->assertDontSee('background-color', false)
+        ->assertSee('Shell cordovan');
+});
+
+it('selecting a swatch selects that variant', function () {
+    $second = Variant::factory()->for($this->product)->create([
+        'description' => 'Black', 'is_active' => true, 'stock_quantity' => 5,
+    ]);
+
+    livewire(ProductPurchase::class, ['product' => $this->product->fresh()])
+        ->call('$set', 'variantId', $second->id)
+        ->assertSet('variantId', $second->id);
+});

@@ -51,6 +51,15 @@ return [
         'unavailable' => 'Currently unavailable',
         'made_to_order' => 'Made to order — ships in :days days',
         'personalization' => 'Personalisation',
+        'colour' => 'Colour',
+        'bespoke_cta' => 'Have this custom-made',
+        'trust' => [
+            'Handmade in Baku — from the bench, not the warehouse',
+            'Free pickup in Sabail, next-day within the city',
+            'Lifetime stitching and edge-paint repair',
+            '14-day unused returns',
+        ],
+        'related' => 'You might also like these',
     ],
     'cart' => [
         'title' => 'Your bag',
@@ -86,6 +95,12 @@ return [
         'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
         'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
         'tile' => ':name — product photography pending, 1600×2000',
+        'gallery' => [
+            'hero' => ':name — hero shot, natural light, 1600×1600',
+            'edge_paint' => ':name — edge paint macro, 1600×1600',
+            'interior' => ':name — interior card slots, 1600×1600',
+            'in_hand' => ':name — in-hand scale reference, 2400×1600',
+        ],
     ],
     'hero' => [
         'line1' => 'One leather.',
