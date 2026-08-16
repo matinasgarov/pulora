@@ -1,5 +1,5 @@
-<div class="mx-auto max-w-3xl px-6 py-16">
-    <h1 class="font-serif text-3xl tracking-wide">{{ __('shop.cart.title') }}</h1>
+<div class="mx-auto max-w-3xl px-4 py-16 sm:px-11">
+    <h1 class="font-display text-3xl tracking-wide text-ink">{{ __('shop.cart.title') }}</h1>
 
     @if ($dropped)
         <p class="mt-6 border border-accent/40 px-4 py-3 font-sans text-sm text-accent">
@@ -8,14 +8,14 @@
     @endif
 
     @if (empty($lines))
-        <p class="mt-16 text-center font-serif text-lg text-muted">{{ __('shop.cart.empty') }}</p>
+        <p class="mt-16 text-center font-display text-lg text-muted">{{ __('shop.cart.empty') }}</p>
     @else
-        <ul class="mt-12 divide-y divide-ink/10">
+        <ul class="mt-12 divide-y divide-rule">
             @foreach ($lines as $line)
-                <li class="flex items-start justify-between py-6">
+                <li class="flex flex-col items-start justify-between gap-4 py-6 sm:flex-row">
                     <div>
-                        <p class="font-serif text-base">{{ $line->productName }}</p>
-                        <p class="mt-1 font-sans text-xs text-muted">{{ $line->variantDescription }}</p>
+                        <p class="font-display text-base text-ink">{{ $line->productName }}</p>
+                        <p class="mt-1 font-sans text-[11px] uppercase tracking-[0.1em] text-muted">{{ $line->variantDescription }}</p>
 
                         @foreach ($line->personalization as $key => $value)
                             <p class="mt-1 font-sans text-xs text-muted">
@@ -29,10 +29,10 @@
                     </div>
 
                     <div class="text-right">
-                        <p class="font-serif text-base"><x-price :minor="$line->lineTotalMinor()" /></p>
+                        <p class="font-display text-base text-ink"><x-price :minor="$line->lineTotalMinor()" /></p>
                         <button type="button"
                                 wire:click="remove('{{ $line->lineKey }}')"
-                                class="mt-2 font-sans text-xs uppercase tracking-widest text-muted hover:text-accent">
+                                class="mt-2 font-sans text-[11px] uppercase tracking-[0.14em] text-muted hover:text-accent">
                             {{ __('shop.cart.remove') }}
                         </button>
                     </div>
@@ -40,13 +40,13 @@
             @endforeach
         </ul>
 
-        <div class="mt-8 flex items-center justify-between border-t border-ink/10 pt-6">
-            <span class="font-serif text-lg">{{ __('shop.cart.subtotal') }}</span>
-            <span class="font-serif text-lg"><x-price :minor="$subtotalMinor" /></span>
+        <div class="mt-8 flex items-center justify-between border-t border-rule pt-6">
+            <span class="font-display text-lg text-ink">{{ __('shop.cart.subtotal') }}</span>
+            <span class="font-display text-lg text-ink"><x-price :minor="$subtotalMinor" /></span>
         </div>
 
         <a href="{{ route('storefront.checkout', absolute: false) }}"
-           class="mt-8 block bg-ink px-6 py-4 text-center font-serif text-sm tracking-widest text-ground hover:bg-accent">
+           class="mt-8 block w-full bg-ink px-6 py-[19px] text-center font-sans text-[11px] uppercase tracking-[0.18em] text-ground hover:bg-accent">
             {{ __('shop.cart.checkout') }}
         </a>
     @endif

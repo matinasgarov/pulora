@@ -2,19 +2,64 @@
 
 return [
     'announcement' => 'Every piece is made to order in Baku',
-    'footer' => [
-        'city' => 'Baku',
-    ],
     'nav' => [
         'catalogue' => 'Shop',
         'cart' => 'Cart',
-        'orders' => 'Find your order',
+        'orders' => 'Order',
+        'atelier' => 'Atelier',
+        'language' => 'Language',
+        'menu' => 'Menu',
+        'search' => 'Search',
+        'close' => 'Close',
+    ],
+    'search' => [
+        'placeholder' => 'Search products — wallet, card case, cordovan…',
+        'note' => 'Search is coming soon.',
+    ],
+    'footer' => [
+        'city' => 'Baku',
+        'headings' => [
+            'shop' => 'Shop',
+            'service' => 'Service',
+            'contact' => 'Contact',
+        ],
+        'brand' => [
+            'tagline' => 'Leather atelier',
+            'address' => 'Baku, Sabail',
+            'hours' => 'Mon — Sat, 11:00—19:00',
+            'craft' => 'Vegetable-tanned leather, saddle stitching, repaired for life.',
+        ],
+        'links' => [
+            'all_products' => 'All products',
+            'wallets' => 'Wallets',
+            'card_holders' => 'Card holders',
+            'shipping' => 'Shipping',
+            'returns' => 'Returns',
+        ],
+        'contact' => [
+            'email' => 'salam@pulora.az',
+            'instagram' => 'Instagram',
+            'whatsapp' => 'WhatsApp',
+        ],
+        'legal' => [
+            'copyright' => '© 2026 Pulora',
+            'made_in' => 'Made in Baku',
+        ],
     ],
     'product' => [
         'add_to_cart' => 'Add to bag',
         'unavailable' => 'Currently unavailable',
         'made_to_order' => 'Made to order — ships in :days days',
         'personalization' => 'Personalisation',
+        'colour' => 'Colour',
+        'bespoke_cta' => 'Have this custom-made',
+        'trust' => [
+            'Handmade in Baku — from the bench, not the warehouse',
+            'Free pickup in Sabail, next-day within the city',
+            'Lifetime stitching and edge-paint repair',
+            '14-day unused returns',
+        ],
+        'related' => 'You might also like these',
     ],
     'cart' => [
         'title' => 'Your bag',
@@ -45,6 +90,58 @@ return [
     'catalogue' => [
         'title' => 'Shop',
         'empty' => 'Nothing here yet.',
+    ],
+    'placeholder' => [
+        'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
+        'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
+        'tile' => ':name — product photography pending, 1600×2000',
+        'gallery' => [
+            'hero' => ':name — hero shot, natural light, 1600×1600',
+            'edge_paint' => ':name — edge paint macro, 1600×1600',
+            'interior' => ':name — interior card slots, 1600×1600',
+            'in_hand' => ':name — in-hand scale reference, 2400×1600',
+        ],
+    ],
+    'hero' => [
+        'line1' => 'One leather.',
+        'line2' => 'One craftsman.',
+        'line3' => 'One lifetime.',
+        'body' => 'Hand-stitched wallets and card cases in vegetable-tanned Italian leather. Baku, Sabail.',
+        'cta' => 'Order your own piece',
+    ],
+    'collection' => [
+        'title' => 'Collection',
+        'tabs' => [
+            'all' => 'All',
+            'wallet' => 'Wallets',
+            'card' => 'Card cases',
+        ],
+        'filters' => 'Filters',
+        'count' => ':count pieces',
+        'sort' => 'Sort',
+        'sort_options' => [
+            'featured' => 'Featured',
+            'price_asc' => 'Price ↑',
+            'price_desc' => 'Price ↓',
+            'newest' => 'Newest',
+        ],
+        'quick_add' => 'Add to bag',
+    ],
+    'bespoke' => [
+        'eyebrow' => 'Bespoke',
+        'heading' => 'Made for you, from scratch',
+        'body' => 'A hand-made piece built to your measurements, your leather, and your idea. We design, cut and stitch it with you in our Baku workshop.',
+        'facts' => [
+            'duration_label' => 'Timeline',
+            'duration_value' => '3–4 weeks',
+            'starting_price_label' => 'Starting from',
+        ],
+        'cta' => 'Start your order',
+    ],
+    'atelier' => [
+        'eyebrow' => 'Atelier — Baku',
+        'quote' => 'In a small workshop, three or four pieces a day. The only way to work without rushing is to work less.',
+        'link' => 'Visit the atelier',
     ],
     'orders' => [
         'find_title' => 'Find your order',

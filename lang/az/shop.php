@@ -2,19 +2,64 @@
 
 return [
     'announcement' => 'Hər parça Bakıda sifarişlə hazırlanır',
-    'footer' => [
-        'city' => 'Bakı',
-    ],
     'nav' => [
         'catalogue' => 'Mağaza',
         'cart' => 'Səbət',
-        'orders' => 'Sifarişinizi tapın',
+        'orders' => 'Sifariş',
+        'atelier' => 'Atelye',
+        'language' => 'Dil',
+        'menu' => 'Menyu',
+        'search' => 'Axtar',
+        'close' => 'Bağla',
+    ],
+    'search' => [
+        'placeholder' => 'Məhsul axtarın — cüzdan, kart qabı, cordovan…',
+        'note' => 'Axtarış tezliklə aktivləşəcək.',
+    ],
+    'footer' => [
+        'city' => 'Bakı',
+        'headings' => [
+            'shop' => 'Mağaza',
+            'service' => 'Xidmət',
+            'contact' => 'Əlaqə',
+        ],
+        'brand' => [
+            'tagline' => 'Dəri atelyesi',
+            'address' => 'Bakı, Səbail',
+            'hours' => 'B. e. — şənbə, 11:00—19:00',
+            'craft' => 'Bitkisel aşılanmış dəri, yəhər tikişi, ömürlük təmir.',
+        ],
+        'links' => [
+            'all_products' => 'Bütün məhsullar',
+            'wallets' => 'Pulqablar',
+            'card_holders' => 'Kart qabları',
+            'shipping' => 'Çatdırılma',
+            'returns' => 'Qaytarma',
+        ],
+        'contact' => [
+            'email' => 'salam@pulora.az',
+            'instagram' => 'Instagram',
+            'whatsapp' => 'WhatsApp',
+        ],
+        'legal' => [
+            'copyright' => '© 2026 Pulora',
+            'made_in' => 'Bakıda hazırlanıb',
+        ],
     ],
     'product' => [
-        'add_to_cart' => 'Səbətə əlavə et',
+        'add_to_cart' => 'Səbətə at',
         'unavailable' => 'Hazırda mövcud deyil',
         'made_to_order' => 'Sifarişlə hazırlanır — :days gün ərzində göndərilir',
         'personalization' => 'Fərdiləşdirmə',
+        'colour' => 'Rəng',
+        'bespoke_cta' => 'Bunu sifarişlə hazırlat',
+        'trust' => [
+            'Bakıda əllə hazırlanır — anbardan deyil, dəzgahdan',
+            'Səbaildən pulsuz götürmə, şəhərdaxili 1 gün',
+            'Ömürlük tikiş və kənar boyası təmiri',
+            '14 gün ərzində istifadəsiz geri qaytarma',
+        ],
+        'related' => 'Bunlar da uyğun gələ bilər',
     ],
     'cart' => [
         'title' => 'Səbətiniz',
@@ -45,6 +90,58 @@ return [
     'catalogue' => [
         'title' => 'Mağaza',
         'empty' => 'Hələlik burada heç nə yoxdur.',
+    ],
+    'placeholder' => [
+        'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
+        'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
+        'tile' => ':name — product photography pending, 1600×2000',
+        'gallery' => [
+            'hero' => ':name — hero shot, natural light, 1600×1600',
+            'edge_paint' => ':name — edge paint macro, 1600×1600',
+            'interior' => ':name — interior card slots, 1600×1600',
+            'in_hand' => ':name — in-hand scale reference, 2400×1600',
+        ],
+    ],
+    'hero' => [
+        'line1' => 'Bir dəri.',
+        'line2' => 'Bir usta.',
+        'line3' => 'Bir ömür.',
+        'body' => 'Bitkisel aşılanmış İtalyan dərisindən, əllə tikilmiş cüzdanlar və kart qabları. Bakı, Səbail.',
+        'cta' => 'Öz parçanızı sifariş edin',
+    ],
+    'collection' => [
+        'title' => 'Kolleksiya',
+        'tabs' => [
+            'all' => 'Hamısı',
+            'wallet' => 'Cüzdan',
+            'card' => 'Kart qabı',
+        ],
+        'filters' => 'Filtrlər',
+        'count' => ':count parça',
+        'sort' => 'Sırala',
+        'sort_options' => [
+            'featured' => 'Seçilmiş',
+            'price_asc' => 'Qiymət ↑',
+            'price_desc' => 'Qiymət ↓',
+            'newest' => 'Yeni',
+        ],
+        'quick_add' => 'Səbətə at',
+    ],
+    'bespoke' => [
+        'eyebrow' => 'Sifarişlə',
+        'heading' => 'Sizin üçün, sıfırdan',
+        'body' => 'Öz ölçünüzə, öz dərinizə və öz təşəbbüsünüzə görə əllə hazırlanan bir parça. Bakı emalatxanamızda sizinlə birlikdə layihələndirir, kəsir və tikirik.',
+        'facts' => [
+            'duration_label' => 'Müddət',
+            'duration_value' => '3–4 həftə',
+            'starting_price_label' => 'Başlanğıc qiymət',
+        ],
+        'cta' => 'Sifarişə başla',
+    ],
+    'atelier' => [
+        'eyebrow' => 'Atelye — Bakı',
+        'quote' => 'Kiçik bir emalatxanada, gündə üç-dörd parça. Tələsmədən işləməyin yeganə yolu az işləməkdir.',
+        'link' => 'Emalatxanaya baş çəkin',
     ],
     'orders' => [
         'find_title' => 'Sifarişinizi tapın',
