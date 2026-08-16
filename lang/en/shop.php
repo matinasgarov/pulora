@@ -82,6 +82,52 @@ return [
         'title' => 'Shop',
         'empty' => 'Nothing here yet.',
     ],
+    'placeholder' => [
+        'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
+        'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
+        'tile' => ':name — product photography pending, 1600×2000',
+    ],
+    'hero' => [
+        'line1' => 'One leather.',
+        'line2' => 'One craftsman.',
+        'line3' => 'One lifetime.',
+        'body' => 'Hand-stitched wallets and card cases in vegetable-tanned Italian leather. Baku, Sabail.',
+        'cta' => 'Order your own piece',
+    ],
+    'collection' => [
+        'title' => 'Collection',
+        'tabs' => [
+            'all' => 'All',
+            'wallet' => 'Wallets',
+            'card' => 'Card cases',
+        ],
+        'filters' => 'Filters',
+        'count' => ':count pieces',
+        'sort' => 'Sort',
+        'sort_options' => [
+            'featured' => 'Featured',
+            'price_asc' => 'Price ↑',
+            'price_desc' => 'Price ↓',
+            'newest' => 'Newest',
+        ],
+        'quick_add' => 'Add to bag',
+    ],
+    'bespoke' => [
+        'eyebrow' => 'Bespoke',
+        'heading' => 'Made for you, from scratch',
+        'body' => 'A hand-made piece built to your measurements, your leather, and your idea. We design, cut and stitch it with you in our Baku workshop.',
+        'facts' => [
+            'duration_label' => 'Timeline',
+            'duration_value' => '3–4 weeks',
+            'starting_price_label' => 'Starting from',
+        ],
+        'cta' => 'Start your order',
+    ],
+    'atelier' => [
+        'eyebrow' => 'Atelier — Baku',
+        'quote' => 'In a small workshop, three or four pieces a day. The only way to work without rushing is to work less.',
+        'link' => 'Visit the atelier',
+    ],
     'orders' => [
         'find_title' => 'Find your order',
         'not_found' => 'We could not find an order matching that email address and order number.',

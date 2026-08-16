@@ -82,6 +82,52 @@ return [
         'title' => 'Mağaza',
         'empty' => 'Hələlik burada heç nə yoxdur.',
     ],
+    'placeholder' => [
+        'hero' => 'hero — bifold wallet in hand, natural light, 2400×1400',
+        'bespoke' => 'bespoke — hands cutting leather at the bench, 1400×1700',
+        'tile' => ':name — product photography pending, 1600×2000',
+    ],
+    'hero' => [
+        'line1' => 'Bir dəri.',
+        'line2' => 'Bir usta.',
+        'line3' => 'Bir ömür.',
+        'body' => 'Bitkisel aşılanmış İtalyan dərisindən, əllə tikilmiş cüzdanlar və kart qabları. Bakı, Səbail.',
+        'cta' => 'Öz parçanızı sifariş edin',
+    ],
+    'collection' => [
+        'title' => 'Kolleksiya',
+        'tabs' => [
+            'all' => 'Hamısı',
+            'wallet' => 'Cüzdan',
+            'card' => 'Kart qabı',
+        ],
+        'filters' => 'Filtrlər',
+        'count' => ':count parça',
+        'sort' => 'Sırala',
+        'sort_options' => [
+            'featured' => 'Seçilmiş',
+            'price_asc' => 'Qiymət ↑',
+            'price_desc' => 'Qiymət ↓',
+            'newest' => 'Yeni',
+        ],
+        'quick_add' => 'Səbətə at',
+    ],
+    'bespoke' => [
+        'eyebrow' => 'Sifarişlə',
+        'heading' => 'Sizin üçün, sıfırdan',
+        'body' => 'Öz ölçünüzə, öz dərinizə və öz təşəbbüsünüzə görə əllə hazırlanan bir parça. Bakı emalatxanamızda sizinlə birlikdə layihələndirir, kəsir və tikirik.',
+        'facts' => [
+            'duration_label' => 'Müddət',
+            'duration_value' => '3–4 həftə',
+            'starting_price_label' => 'Başlanğıc qiymət',
+        ],
+        'cta' => 'Sifarişə başla',
+    ],
+    'atelier' => [
+        'eyebrow' => 'Atelye — Bakı',
+        'quote' => 'Kiçik bir emalatxanada, gündə üç-dörd parça. Tələsmədən işləməyin yeganə yolu az işləməkdir.',
+        'link' => 'Emalatxanaya baş çəkin',
+    ],
     'orders' => [
         'find_title' => 'Sifarişinizi tapın',
         'not_found' => 'Bu e-poçt ünvanı və sifariş nömrəsinə uyğun sifariş tapılmadı.',

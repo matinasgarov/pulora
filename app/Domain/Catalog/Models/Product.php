@@ -41,6 +41,21 @@ class Product extends Model
     public function scopeActive(Builder $q): Builder { return $q->where('is_active', true); }
 
     /**
+     * A one-click "add to bag" from the collection grid can only answer a
+     * single question ("add this"), not "which colour" or "what monogram".
+     * It is only safe when there is exactly one active variant to add and no
+     * required personalization option waiting for an answer the tile cannot
+     * collect. Assumes `variants` and `personalizationOptions` are already
+     * eager-loaded — this filters in memory rather than issuing a query per
+     * tile.
+     */
+    public function canQuickAdd(): bool
+    {
+        return $this->variants->where('is_active', true)->count() === 1
+            && $this->personalizationOptions->where('is_required', true)->isEmpty();
+    }
+
+    /**
      * The raw per-locale map for `specs` ({"en": [...], "az": [...]}), for
      * admin editing where every locale must be visible at once. Unlike
      * HasTranslations::getTranslations(), this cannot read the attribute
