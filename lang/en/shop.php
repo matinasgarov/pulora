@@ -38,6 +38,8 @@ return [
         ],
         'contact' => [
             'email' => 'salam@pulora.az',
+            'instagram' => 'Instagram',
+            'whatsapp' => 'WhatsApp',
         ],
         'legal' => [
             'copyright' => '© 2026 Pulora',

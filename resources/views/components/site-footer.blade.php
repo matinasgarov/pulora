@@ -36,9 +36,12 @@
 
         <div class="flex flex-col gap-3">
             <p class="{{ $headingClass }}">{{ __('shop.footer.headings.contact') }}</p>
+            {{-- The brand block on the left already carries the address and
+                 opening hours; repeating them here read as a mistake rather
+                 than as contact detail. This column is how to reach a person. --}}
             <a href="mailto:{{ __('shop.footer.contact.email') }}" class="{{ $linkClass }}">{{ __('shop.footer.contact.email') }}</a>
-            <span class="{{ $plainClass }}">{{ __('shop.footer.brand.address') }}</span>
-            <span class="{{ $plainClass }}">{{ __('shop.footer.brand.hours') }}</span>
+            <span class="{{ $plainClass }}">{{ __('shop.footer.contact.instagram') }}</span>
+            <span class="{{ $plainClass }}">{{ __('shop.footer.contact.whatsapp') }}</span>
         </div>
     </div>
 
