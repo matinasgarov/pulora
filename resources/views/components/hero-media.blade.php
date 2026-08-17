@@ -24,6 +24,13 @@
                class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:hidden"></video>
     @endif
 
+    {{-- Top scrim. With the header engraved into the picture — no background,
+         no blur — this is the only thing holding the nav off the photograph.
+         Shallow and weighted to the very top, so it darkens the band the bar
+         occupies without reading as a band itself. It also has to work for
+         whatever photograph is dropped in next, not just this one. --}}
+    <div class="absolute inset-x-0 top-0 h-[32%] bg-gradient-to-b from-bark/65 via-bark/25 to-transparent" aria-hidden="true"></div>
+
     {{-- Scrim, dark rather than light. The contrast tests pin tokens against
          tokens and a photograph is neither, so the copy needs a known surface
          under it. Fading to bark rather than to the ground means the picture

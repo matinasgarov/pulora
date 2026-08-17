@@ -115,20 +115,29 @@ body {
     box-sizing: border-box;
     height: var(--header-height);
     color: var(--color-ink);
-    background: rgba(250, 249, 246, 0.94);
+    /* Glass: translucent enough that the page is legibly moving underneath it,
+       which is the whole point of the material. Fully opaque would just be a
+       bar that happens to be blurred behind nothing. */
+    background: rgba(250, 249, 246, 0.76);
     border-bottom: 1px solid var(--color-rule);
-    backdrop-filter: blur(8px);
-    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    backdrop-filter: blur(14px) saturate(1.15);
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease,
+        backdrop-filter 0.4s ease;
 }
 
-/* Dark glass. Excluded when the search panel is open: that panel is in-flow
-   content inside the header with its own dark-on-light fields, and it is
-   unreadable on glass. Opening search is a deliberate act, so borrowing the
-   solid state for it costs nothing. */
+/* Engraved into the hero: no plate at all. No background, no blur, no rule —
+   the type sits in the photograph rather than on a panel laid over it. What
+   keeps it readable is the hero's own top scrim, not a surface behind the bar.
+   
+   Excluded when the search panel is open: that panel is in-flow content inside
+   the header with its own dark-on-light fields, and it is unreadable without a
+   surface. Opening search is a deliberate act, so borrowing the glass for it
+   costs nothing. */
 .site-header[data-overlay]:not([data-scrolled]):not(:has(#search-panel-toggle:checked)) {
     color: var(--color-ground);
-    background: rgba(36, 24, 17, 0.28);
-    border-bottom-color: rgba(250, 249, 246, 0.16);
+    background: transparent;
+    border-bottom-color: transparent;
+    backdrop-filter: none;
 }
 
 .site-header .icon-button:hover {
