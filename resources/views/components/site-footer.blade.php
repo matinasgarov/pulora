@@ -4,12 +4,18 @@
     $plainClass = 'font-sans text-sm text-bark-muted';
 @endphp
 
+{{-- The descent into the footer. Cream softens through tan into bark across
+     most of a screen height, so the dark end of the page is arrived at rather
+     than run into. Empty by design — see .footer-fade in app.css for why no
+     text can sit on it. --}}
+<div class="footer-fade" aria-hidden="true"></div>
+
 {{-- Dark, like the hero. The storefront was white and cream from top to
      bottom, which left it with nothing to sit against; anchoring both ends on
      bark gives the pale middle a frame instead of letting it run off the edge
      of the screen. Every colour here is a token measured against bark in
      ContrastTest — the light-ground greys all vanish on this surface. --}}
-<footer class="mt-24 bg-bark px-4 pt-[70px] pb-10 sm:px-11">
+<footer class="bg-bark px-4 pt-[70px] pb-10 sm:px-11">
     <div class="flex flex-col gap-10 md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
         <div>
             <a href="{{ route('storefront.catalogue', absolute: false) }}"

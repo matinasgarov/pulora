@@ -31,3 +31,10 @@ it('localises the city in the footer', function () {
     $this->get('/az')->assertSee('Bakı, Səbail');
     $this->get('/en')->assertSee('Baku, Sabail');
 });
+
+it('never puts the glass header on a page without a dark hero', function () {
+    // The overlay is opt-in per page. A cart or checkout page opens on cream,
+    // where light-on-glass would be unreadable.
+    $this->get('/az/cart')->assertDontSee('data-overlay', false);
+    $this->get('/az/orders')->assertDontSee('data-overlay', false);
+});

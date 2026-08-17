@@ -57,6 +57,12 @@
        dark surface get a lighter cut of the same hue — 5.81:1. */
     --color-accent-light: #b98d63;
 
+    /* The midpoint of the cream-to-bark fade above the footer. A straight
+       interpolation between the two runs through a muddy grey; stopping at a
+       warm tan on the way keeps the whole descent in leather tones. Never used
+       behind text — see the fade's own comment for why it cannot be. */
+    --color-bark-fade: #c0a992;
+
     --color-rule: #eae5dc;
     --color-rule-light: #f0ece4;
     --color-border: #ded8cd;
@@ -73,6 +79,98 @@ body {
 
 ::selection {
     background: #e4ded3;
+}
+
+/* The header.
+ *
+ * Two states. Its ordinary one is the cream bar. Over a dark hero it becomes
+ * dark glass instead, so the photograph runs unbroken to the top of the window
+ * and the bar reads as part of it rather than as a lid on top of it — then
+ * turns back to cream once you scroll past the hero and there is pale page
+ * behind it again.
+ *
+ * The cream state is the default and the overlay is the exception, so a page
+ * with no dark hero, and a visitor with no JavaScript, both get the readable
+ * bar without anything having to run.
+ *
+ * --header-height is what lets the hero slide up underneath it. Keeping the
+ * header in normal flow (rather than making it `fixed`) means every other page
+ * lays out unchanged; only the hero opts into being covered. */
+:root {
+    --header-height: 77px;
+}
+
+@media (min-width: 640px) {
+    :root {
+        --header-height: 91px;
+    }
+}
+
+.site-header {
+    /* The variable is authoritative: the bar takes its height from it rather
+       than from padding that happens to add up to the same number. Otherwise
+       the two are duplicated knowledge and changing the padding silently
+       misaligns the hero that slides underneath. border-box, so the hairline
+       rule is inside the figure. */
+    box-sizing: border-box;
+    height: var(--header-height);
+    color: var(--color-ink);
+    background: rgba(250, 249, 246, 0.94);
+    border-bottom: 1px solid var(--color-rule);
+    backdrop-filter: blur(8px);
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+/* Dark glass. Excluded when the search panel is open: that panel is in-flow
+   content inside the header with its own dark-on-light fields, and it is
+   unreadable on glass. Opening search is a deliberate act, so borrowing the
+   solid state for it costs nothing. */
+.site-header[data-overlay]:not([data-scrolled]):not(:has(#search-panel-toggle:checked)) {
+    color: var(--color-ground);
+    background: rgba(36, 24, 17, 0.28);
+    border-bottom-color: rgba(250, 249, 246, 0.16);
+}
+
+.site-header .icon-button:hover {
+    background: var(--color-rule-light);
+}
+
+.site-header[data-overlay]:not([data-scrolled]):not(:has(#search-panel-toggle:checked)) .icon-button:hover {
+    background: rgba(250, 249, 246, 0.16);
+}
+
+.site-header .cart-badge {
+    background: var(--color-ink);
+    color: var(--color-ground);
+}
+
+.site-header[data-overlay]:not([data-scrolled]):not(:has(#search-panel-toggle:checked)) .cart-badge {
+    background: var(--color-ground);
+    color: var(--color-bark);
+}
+
+.hero-bleed {
+    margin-top: calc(-1 * var(--header-height));
+}
+
+/* The descent into the footer.
+ *
+ * Cream to bark across most of a screen height, so the page arrives at the
+ * dark footer instead of hitting it. This band is deliberately empty: the
+ * midtones it passes through would fail contrast for --color-muted and
+ * --color-accent (the accent is a brown, and measures only 4.70:1 on the
+ * ground it already sits on — any warmer background pushes it under AA). Text
+ * stays on the ground; only the empty run-in changes colour. */
+.footer-fade {
+    height: 40vh;
+    min-height: 260px;
+    background: linear-gradient(
+        to bottom,
+        var(--color-ground) 0%,
+        var(--color-ground-alt) 18%,
+        var(--color-bark-fade) 62%,
+        var(--color-bark) 100%
+    );
 }
 
 /* The product grid's breakpoints, written as plain CSS rather than as Tailwind

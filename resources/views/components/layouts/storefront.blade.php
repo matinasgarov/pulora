@@ -1,4 +1,4 @@
-@props(['title' => null, 'liveCart' => true])
+@props(['title' => null, 'liveCart' => true, 'overlayHeader' => false])
 
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
@@ -10,7 +10,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-ground font-sans text-ink antialiased">
-    <x-site-header :live-cart="$liveCart" />
+    <x-site-header :live-cart="$liveCart" :overlay="$overlayHeader" />
 
     {{-- Sibling of <header>, not a child of it — see the component's own
          comment for why. --}}

@@ -124,3 +124,27 @@ it('renders a quick-add control for a product with exactly one active variant an
 
     $this->get('/az')->assertSee(__('shop.collection.quick_add'));
 });
+
+it('asks for the glass header only when there is a photograph behind it', function () {
+    $this->mock(HeroMedia::class, function ($mock) {
+        $mock->shouldReceive('poster')->andReturn('/media/hero.jpg');
+        $mock->shouldReceive('videoSources')->andReturn([]);
+    });
+
+    $this->get('/az')
+        ->assertSee('data-overlay', false)
+        ->assertSee('hero-bleed', false);
+});
+
+it('keeps the solid header when the hero is still a placeholder', function () {
+    // Dark glass over a cream placeholder frame would be light text on light
+    // ground — the decorative state has to be conditional on what is under it.
+    $this->mock(HeroMedia::class, function ($mock) {
+        $mock->shouldReceive('poster')->andReturn(null);
+        $mock->shouldReceive('videoSources')->andReturn([]);
+    });
+
+    $this->get('/az')
+        ->assertDontSee('data-overlay', false)
+        ->assertDontSee('hero-bleed', false);
+});

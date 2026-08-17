@@ -1,8 +1,16 @@
-<x-layouts.storefront>
+{{-- The header overlays the hero only when there is a photograph to overlay.
+     On the placeholder frame it would be dark glass over cream. --}}
+<x-layouts.storefront :overlay-header="$heroPoster !== null">
     {{-- Hero — 84vh, min 580px, content bottom-left. The backdrop is whatever
          has been dropped into public/media (see App\Support\HeroMedia); with
          nothing there it stays the placeholder frame naming the shot owed. --}}
-    <section class="relative h-[84vh] min-h-[580px] overflow-hidden">
+    <section @class([
+        'relative h-[84vh] min-h-[580px] overflow-hidden',
+        // Slides up under the sticky header so the photograph reaches the top
+        // of the window. Only the hero opts in, so every other page — and this
+        // one without a photograph — lays out untouched.
+        'hero-bleed' => $heroPoster !== null,
+    ])>
         {{-- Wrapped rather than passed `absolute inset-0` straight to the
              component: the component's own root is already `relative` (so
              the caption can anchor to it), and a `position` utility on the

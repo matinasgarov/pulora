@@ -1,13 +1,20 @@
-@props(['liveCart' => true])
+@props(['liveCart' => true, 'overlay' => false])
 
 @php
     $otherLocale = app()->getLocale() === 'en' ? 'az' : 'en';
-    $iconBtn = 'grid size-11 sm:size-[38px] place-items-center rounded-full text-ink transition-colors hover:bg-rule-light';
+    $iconBtn = 'icon-button grid size-11 sm:size-[38px] place-items-center rounded-full transition-colors';
 @endphp
 
 {{-- Sticky, translucent, blurred. z-20 sits below the drawer/scrim (z-50/60)
-     so the drawer can cover it, and above ordinary page content. --}}
-<header class="sticky top-0 z-20 border-b border-rule bg-[rgba(250,249,246,0.94)] backdrop-blur-[8px]">
+     so the drawer can cover it, and above ordinary page content.
+
+     `data-overlay` asks for the dark-glass treatment, which a page sets when it
+     opens on a dark hero. The script adds `data-scrolled` once the page has
+     moved past it; both states, and the swap between them, live in app.css.
+     Colours are inherited from here rather than set per element, so one rule
+     flips the whole bar. --}}
+<header data-site-header @if ($overlay) data-overlay @endif
+        class="site-header sticky top-0 z-20">
     {{-- Declared as a direct child of <header> — a sibling of both the icon
          row (where its label lives) and the search panel below (which reacts
          to it via peer-checked). CSS's general sibling combinator only
@@ -16,7 +23,7 @@
          of the checkbox, unreachable from it. --}}
     <input type="checkbox" id="search-panel-toggle" class="peer/search sr-only">
 
-    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-4 sm:px-11 sm:py-[26px]">
+    <div class="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-11">
         {{-- Text nav lives here on sm+ and is duplicated inside the drawer for
              mobile, where this column is hidden. The links themselves are
              plain anchors either way, so they work with JS entirely off. --}}
@@ -32,7 +39,7 @@
              the left). A matching text-indent adds that same space back on
              the left side, so the word sits back on-centre. --}}
         <a href="{{ route('storefront.catalogue', absolute: false) }}"
-           class="col-start-2 justify-self-center font-display text-[26px] leading-none uppercase tracking-[0.42em] text-ink sm:text-[32px] [text-indent:0.42em]">
+           class="col-start-2 justify-self-center font-display text-[26px] leading-none uppercase tracking-[0.42em] sm:text-[32px] [text-indent:0.42em]">
             Pulora
         </a>
 
@@ -66,7 +73,7 @@
                 @else
                     @php($staticCount = app(\App\Domain\Cart\CartService::class)->snapshot()->totalQuantity())
                     @if ($staticCount > 0)
-                        <span class="absolute right-px top-[3px] grid min-w-[15px] h-[15px] place-items-center rounded-full bg-ink px-[3px] font-sans text-[9px] leading-none text-ground">{{ $staticCount }}</span>
+                        <span class="cart-badge absolute right-px top-[3px] grid min-w-[15px] h-[15px] place-items-center rounded-full px-[3px] font-sans text-[9px] leading-none">{{ $staticCount }}</span>
                     @endif
                 @endif
             </a>
@@ -94,7 +101,7 @@
          Enter works with scripting off and the result is a linkable URL. The
          #shop fragment lands on the grid rather than at the top of the hero,
          which is where the answer to a search actually is. --}}
-    <div class="hidden border-t border-rule px-4 py-5 sm:px-11 sm:py-[22px] sm:pb-6 peer-checked/search:block">
+    <div class="hidden border-t border-rule px-4 py-5 text-ink sm:px-11 sm:py-[22px] sm:pb-6 peer-checked/search:block">
         <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}"
               class="flex items-center gap-4 border-b border-rule pb-3">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" class="shrink-0 text-muted" aria-hidden="true">
