@@ -1,7 +1,7 @@
 <x-layouts.storefront>
-    {{-- Hero — 84vh, min 580px, content bottom-left. Photography has not
-         been shot yet; see placeholder-frame's own comment for why the gap
-         stays visible instead of hidden behind a blank box. --}}
+    {{-- Hero — 84vh, min 580px, content bottom-left. The backdrop is whatever
+         has been dropped into public/media (see App\Support\HeroMedia); with
+         nothing there it stays the placeholder frame naming the shot owed. --}}
     <section class="relative h-[84vh] min-h-[580px] overflow-hidden">
         {{-- Wrapped rather than passed `absolute inset-0` straight to the
              component: the component's own root is already `relative` (so
@@ -13,7 +13,7 @@
              hero. Sizing the wrapper and letting the component fill it with
              `h-full w-full` sidesteps the conflict entirely. --}}
         <div class="absolute inset-0">
-            <x-placeholder-frame :caption="__('shop.placeholder.hero')" class="h-full w-full" />
+            <x-hero-media :poster="$heroPoster" :video-sources="$heroVideoSources" />
         </div>
 
         <div class="absolute inset-x-0 bottom-0 px-4 pb-10 sm:px-11 sm:pb-[60px]">

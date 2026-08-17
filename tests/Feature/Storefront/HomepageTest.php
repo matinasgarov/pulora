@@ -4,6 +4,7 @@ use App\Domain\Catalog\Models\PersonalizationOption;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\Variant;
 use App\Domain\Catalog\ProductTag;
+use App\Support\HeroMedia;
 
 it('renders the hero copy', function () {
     $this->get('/az')
@@ -11,6 +12,39 @@ it('renders the hero copy', function () {
         ->assertSee(__('shop.hero.line2'))
         ->assertSee(__('shop.hero.line3'))
         ->assertSee(__('shop.hero.body'));
+});
+
+it('keeps the placeholder frame in the hero until a photograph is dropped in', function () {
+    $this->mock(HeroMedia::class, function ($mock) {
+        $mock->shouldReceive('poster')->andReturn(null);
+        $mock->shouldReceive('videoSources')->andReturn([]);
+    });
+
+    $this->get('/az')
+        ->assertSee(__('shop.placeholder.hero'))
+        ->assertDontSee('data-hero-video', false);
+});
+
+it('makes the hero photograph the priority load and never ships a bare video', function () {
+    $this->mock(HeroMedia::class, function ($mock) {
+        $mock->shouldReceive('poster')->andReturn('/media/hero.jpg');
+        $mock->shouldReceive('videoSources')->andReturn([
+            ['src' => '/media/hero.webm', 'type' => 'video/webm'],
+        ]);
+    });
+
+    $response = $this->get('/az');
+
+    $response->assertSee('src="/media/hero.jpg"', false)
+        ->assertSee('fetchpriority="high"', false)
+        ->assertDontSee(__('shop.placeholder.hero'));
+
+    // The sources are handed over by the script only once it has decided this
+    // visitor should get the video, so nothing in the markup can start the
+    // download on its own.
+    $response->assertSee('data-hero-video', false)
+        ->assertSee('preload="none"', false)
+        ->assertDontSee('<source', false);
 });
 
 it('renders the collection title and the bespoke and atelier sections', function () {

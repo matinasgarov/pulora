@@ -136,12 +136,12 @@
     "src": "node_modules/@fontsource/bodoni-moda/files/bodoni-moda-symbols-500-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dtg2gLeo.css",
+    "file": "assets/app-D5o2V54O.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CohHdUo-.js",
+    "file": "assets/app-BrL-LXP8.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

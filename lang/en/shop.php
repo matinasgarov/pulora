@@ -114,6 +114,7 @@ return [
         'line3' => 'One lifetime.',
         'body' => 'Hand-stitched wallets and card cases in vegetable-tanned Italian leather. Baku, Sabail.',
         'cta' => 'Order your own piece',
+        'poster_alt' => 'A craftsman hand-stitching a wallet at the bench in the Pulora atelier, Baku.',
     ],
     'collection' => [
         'title' => 'Collection',

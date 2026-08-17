@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Domain\Catalog\BespokeCta;
 use App\Domain\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
+use App\Support\HeroMedia;
 use Illuminate\View\View;
 
 class CatalogueController extends Controller
@@ -35,10 +36,14 @@ class CatalogueController extends Controller
         // the configurator (see the design plan, Task 4 and Task 5). Shared
         // with the product page's own bespoke CTA via BespokeCta::href() so
         // both point at the same place.
+        $hero = app(HeroMedia::class);
+
         return view('storefront.catalogue', [
             'products' => $products,
             'bespokeStartingPriceMinor' => self::BESPOKE_STARTING_PRICE_MINOR,
             'bespokeCtaHref' => BespokeCta::href(),
+            'heroPoster' => $hero->poster(),
+            'heroVideoSources' => $hero->videoSources(),
         ]);
     }
 }

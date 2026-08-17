@@ -114,6 +114,7 @@ return [
         'line3' => 'Bir ömür.',
         'body' => 'Bitkisel aşılanmış İtalyan dərisindən, əllə tikilmiş cüzdanlar və kart qabları. Bakı, Səbail.',
         'cta' => 'Öz parçanızı sifariş edin',
+        'poster_alt' => 'Bakıdakı Pulora emalatxanasında dəzgah arxasında pulqabını əllə tikən usta.',
     ],
     'collection' => [
         'title' => 'Kolleksiya',
