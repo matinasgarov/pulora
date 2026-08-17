@@ -88,8 +88,11 @@ function setUp(gallery) {
 
     // --- zoom ---------------------------------------------------------------
 
-    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-
+    // Zoom is opt-in, on click. Magnifying on hover meant the picture jumped
+    // under anyone who was only crossing it on their way to an arrow, which made
+    // the arrows awkward to reach for the sake of a gesture nobody asked for. A
+    // click also means one behaviour on a mouse and on a touch screen instead of
+    // two paths that have to be kept in agreement.
     frames.forEach((frame) => {
         const image = frame.querySelector('[data-gallery-image]');
 
@@ -97,8 +100,11 @@ function setUp(gallery) {
             return;
         }
 
-        // Origin follows the cursor, so the point under the pointer is the point
-        // magnified — the whole reason to zoom a stitch or an edge paint.
+        let zoomed = false;
+
+        // Origin tracks the pointer, so the point under it is the point
+        // magnified — the whole reason to zoom a stitch or an edge paint. Once
+        // zoomed, moving the pointer pans around the photograph.
         const originFrom = (event) => {
             const box = frame.getBoundingClientRect();
 
@@ -107,39 +113,38 @@ function setUp(gallery) {
                 `${((event.clientY - box.top) / box.height) * 100}%`;
         };
 
-        const zoom = (event) => {
+        const zoomIn = (event) => {
+            zoomed = true;
             originFrom(event);
             image.style.transform = `scale(${ZOOM})`;
             frame.style.cursor = 'zoom-out';
         };
 
-        const reset = () => {
+        const zoomOut = () => {
+            zoomed = false;
             image.style.transform = '';
-            frame.style.cursor = finePointer.matches ? 'zoom-in' : '';
+            frame.style.cursor = 'zoom-in';
         };
 
-        const applyPointerMode = () => {
-            reset();
+        zoomOut();
 
-            if (!finePointer.matches) {
-                // No hover to leave on a touch screen, so the same tap that
-                // zooms in has to be able to zoom back out.
-                frame.onclick = (event) => {
-                    image.style.transform ? reset() : zoom(event);
-                };
-                frame.onmousemove = null;
-                frame.onmouseleave = null;
+        frame.addEventListener('click', (event) => (zoomed ? zoomOut() : zoomIn(event)));
 
-                return;
+        frame.addEventListener('mousemove', (event) => {
+            if (zoomed) {
+                originFrom(event);
             }
+        });
 
-            frame.onclick = null;
-            frame.onmousemove = zoom;
-            frame.onmouseleave = reset;
-        };
+        // Leaving the picture drops the zoom, so it is never left magnified
+        // behind whatever the pointer moved on to.
+        frame.addEventListener('mouseleave', () => zoomed && zoomOut());
 
-        applyPointerMode();
-        finePointer.addEventListener('change', applyPointerMode);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && zoomed) {
+                zoomOut();
+            }
+        });
     });
 }
 
