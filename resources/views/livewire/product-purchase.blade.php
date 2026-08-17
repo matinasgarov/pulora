@@ -57,9 +57,10 @@
             <input type="text"
                    wire:model.live="personalization.{{ $option->type }}"
                    maxlength="{{ $option->max_characters }}"
-                   class="mt-2 w-full border border-border bg-transparent px-3 py-3 font-sans text-[14px]">
+                   @error('personalization.'.$option->type) aria-invalid="true" @enderror
+                   class="mt-2 w-full border border-border bg-transparent px-3 py-3 font-sans text-[14px] aria-[invalid]:border-danger">
             @error('personalization.'.$option->type)
-                <p class="mt-1 font-sans text-xs text-accent">{{ $message }}</p>
+                <p class="mt-1 font-sans text-xs text-danger">{{ $message }}</p>
             @enderror
         </div>
     @endforeach

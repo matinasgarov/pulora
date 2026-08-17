@@ -36,6 +36,13 @@
 
     --color-accent: #8a6a4b;
 
+    /* Validation errors. The accent brown was doing this job, which meant a
+       failed field looked like every other emphasised thing on the page — the
+       one colour on a form that has to mean "this is wrong" was the same one
+       used for links and eyebrows. Deep enough to sit in a warm palette
+       without reading as a warning sticker, and 7.08:1 on the ground. */
+    --color-danger: #a3231d;
+
     --color-rule: #eae5dc;
     --color-rule-light: #f0ece4;
     --color-border: #ded8cd;
@@ -52,6 +59,35 @@ body {
 
 ::selection {
     background: #e4ded3;
+}
+
+/* The product grid's breakpoints, written as plain CSS rather than as Tailwind
+   variants.
+
+   Tailwind v4 emits arbitrary media variants (`[@media(min-width:900px)]:`)
+   after the named ones, so a hand-written 1200px rule loses to a hand-written
+   900px rule only if the generator happens to order them that way — and it
+   ordered `xl:grid-cols-4` before `[@media(min-width:900px)]:grid-cols-3`,
+   which meant the grid stayed 3-up at every width above 900px no matter what
+   the markup said. Four steps whose cascade has to be right are clearer as
+   four rules in the order they apply. */
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 1.75rem;
+    row-gap: 3.5rem;
+}
+
+@media (min-width: 560px) {
+    .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 900px) {
+    .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1200px) {
+    .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 /* The ground is low-contrast enough that the UA default focus ring disappears

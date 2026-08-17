@@ -1,7 +1,6 @@
 <?php // lang/en/shop.php
 
 return [
-    'announcement' => 'Every piece is made to order in Baku',
     'nav' => [
         'catalogue' => 'Shop',
         'cart' => 'Cart',
@@ -14,7 +13,6 @@ return [
     ],
     'search' => [
         'placeholder' => 'Search products — wallet, card case, cordovan…',
-        'note' => 'Search is coming soon.',
     ],
     'footer' => [
         'city' => 'Baku',
@@ -72,6 +70,8 @@ return [
         'empty' => 'Your bag is empty.',
         'subtotal' => 'Subtotal',
         'remove' => 'Remove',
+        'increase' => 'Increase quantity',
+        'decrease' => 'Decrease quantity',
         'quantity' => 'Quantity',
         'checkout' => 'Checkout',
         'line_removed' => 'One item is no longer available and has been removed from your bag.',
@@ -133,6 +133,19 @@ return [
             'newest' => 'Newest',
         ],
         'quick_add' => 'Add to bag',
+        'apply' => 'Apply',
+        'clear' => 'Clear all',
+        'clear_search' => 'Clear',
+        'filter_category' => 'Category',
+        'filter_price' => 'Price',
+        'price_bands' => [
+            'any' => 'Any price',
+            'under_50' => 'Under 50 AZN',
+            'mid' => '50 — 100 AZN',
+            'over_100' => 'Over 100 AZN',
+        ],
+        'results_for' => ':count results for “:query”',
+        'no_matches' => 'Nothing matches that yet.',
     ],
     'bespoke' => [
         'eyebrow' => 'Bespoke',

@@ -43,58 +43,144 @@
                 {{ __('shop.collection.title') }}
             </h2>
 
-            {{-- Category tabs are Phase 2 (search/filters/sort) and inert
-                 here — rendered disabled rather than as controls that
-                 silently do nothing. The active tab keeps a transparent
-                 underline reserved on the inactive ones so the row never
-                 shifts once tabs become live. --}}
+            {{-- Category tabs are links, not buttons: they change what the
+                 page shows, which is a navigation, and a link keeps that
+                 shareable, bookmarkable and reachable with the back button.
+                 Each carries the rest of the state along, so choosing a
+                 category does not silently discard a search. --}}
             <div class="flex items-center gap-6 font-sans text-[11px] uppercase tracking-[0.16em]">
-                <button type="button" disabled aria-current="true"
-                        class="cursor-not-allowed border-b border-ink pb-1 text-ink opacity-60">
-                    {{ __('shop.collection.tabs.all') }}
-                </button>
-                <button type="button" disabled
-                        class="cursor-not-allowed border-b border-transparent pb-1 text-muted opacity-60">
-                    {{ __('shop.collection.tabs.wallet') }}
-                </button>
-                <button type="button" disabled
-                        class="cursor-not-allowed border-b border-transparent pb-1 text-muted opacity-60">
-                    {{ __('shop.collection.tabs.card') }}
-                </button>
+                @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card'] as $value => $key)
+                    @php($isCurrent = ($filter->category ?? '') === $value)
+                    <a href="{{ route('storefront.catalogue', $filter->toQuery(['category' => $value]), absolute: false) }}#shop"
+                       @if ($isCurrent) aria-current="page" @endif
+                       @class([
+                           'border-b pb-1',
+                           'border-ink text-ink' => $isCurrent,
+                           'border-transparent text-muted hover:text-ink' => ! $isCurrent,
+                       ])>
+                        {{ __('shop.collection.tabs.'.$key) }}
+                    </a>
+                @endforeach
             </div>
         </div>
 
-        {{-- Toolbar: filter button and sort are also Phase 2 and inert; the
-             count is real. --}}
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-rule py-4 font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
-            <button type="button" disabled
-                    class="flex cursor-not-allowed items-center gap-2 opacity-60">
-                <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
-                    <line x1="3" y1="6" x2="17" y2="6" />
-                    <line x1="3" y1="10" x2="17" y2="10" />
-                    <line x1="3" y1="14" x2="17" y2="14" />
-                </svg>
-                <span>{{ __('shop.collection.filters') }}</span>
-                <span>({{ __('shop.collection.count', ['count' => $products->count()]) }})</span>
-            </button>
+        {{-- Toolbar and filter panel are one GET form, so the sort select and
+             the panel's fields submit together and the URL ends up holding the
+             whole state. The panel opens with a checkbox rather than a script,
+             the same way the header's search panel does. --}}
+        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}" data-catalogue-filters>
+            {{-- Carries the active search through a filter change. Without it,
+                 narrowing by price would quietly throw the search away. --}}
+            <input type="hidden" name="q" value="{{ $filter->q }}">
 
-            <label class="flex cursor-not-allowed items-center gap-3 opacity-60">
-                <span>{{ __('shop.collection.sort') }}</span>
-                <select disabled class="cursor-not-allowed border-b border-current bg-transparent py-0.5 pr-1 font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
-                    <option>{{ __('shop.collection.sort_options.featured') }}</option>
-                    <option>{{ __('shop.collection.sort_options.price_asc') }}</option>
-                    <option>{{ __('shop.collection.sort_options.price_desc') }}</option>
-                    <option>{{ __('shop.collection.sort_options.newest') }}</option>
-                </select>
-            </label>
-        </div>
+            <input type="checkbox" id="filter-panel-toggle" class="peer/filters sr-only">
 
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-rule py-4 font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
+                <label for="filter-panel-toggle" class="flex cursor-pointer items-center gap-2 hover:text-ink">
+                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="17" y2="6" />
+                        <line x1="3" y1="10" x2="17" y2="10" />
+                        <line x1="3" y1="14" x2="17" y2="14" />
+                    </svg>
+                    <span>{{ __('shop.collection.filters') }}</span>
+                    <span>({{ __('shop.collection.count', ['count' => $products->count()]) }})</span>
+                </label>
+
+                <div class="flex items-center gap-3">
+                    <label for="catalogue-sort">{{ __('shop.collection.sort') }}</label>
+                    <select id="catalogue-sort" name="sort"
+                            class="border-b border-current bg-transparent py-0.5 pr-1 font-sans text-[11px] uppercase tracking-[0.16em] text-ink">
+                        @foreach (\App\Domain\Catalog\CatalogueFilter::SORTS as $option)
+                            <option value="{{ $option }}" @selected($filter->sort === $option)>
+                                {{ __('shop.collection.sort_options.'.$option) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    {{-- The script hides this and submits on change instead. It
+                         is visible without one, because a select that needs a
+                         script to take effect is a control that does nothing. --}}
+                    <button type="submit" data-filters-submit
+                            class="border border-border px-3 py-1 text-ink hover:border-ink">
+                        {{ __('shop.collection.apply') }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="hidden border-b border-rule py-6 peer-checked/filters:block">
+                <div class="grid gap-8 sm:grid-cols-2">
+                    <fieldset>
+                        <legend class="font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
+                            {{ __('shop.collection.filter_category') }}
+                        </legend>
+                        <div class="mt-3 space-y-2">
+                            @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card'] as $value => $key)
+                                <label class="flex items-center gap-3 font-sans text-[13px] text-ink">
+                                    <input type="radio" name="category" value="{{ $value }}"
+                                           @checked(($filter->category ?? '') === $value)>
+                                    {{ __('shop.collection.tabs.'.$key) }}
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend class="font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
+                            {{ __('shop.collection.filter_price') }}
+                        </legend>
+                        <div class="mt-3 space-y-2">
+                            @foreach (['' => 'any', 'under_50' => 'under_50', '50_100' => 'mid', 'over_100' => 'over_100'] as $value => $key)
+                                <label class="flex items-center gap-3 font-sans text-[13px] text-ink">
+                                    <input type="radio" name="price" value="{{ $value }}"
+                                           @checked(($filter->price ?? '') === $value)>
+                                    {{ __('shop.collection.price_bands.'.$key) }}
+                                </label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="mt-6 flex items-center gap-5">
+                    <button type="submit"
+                            class="bg-ink px-6 py-3 font-sans text-[11px] uppercase tracking-[0.18em] text-ground hover:bg-accent">
+                        {{ __('shop.collection.apply') }}
+                    </button>
+                    @if ($filter->isActive())
+                        <a href="{{ route('storefront.catalogue', absolute: false) }}#shop"
+                           class="font-sans text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink">
+                            {{ __('shop.collection.clear') }}
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </form>
+
+        {{-- What the grid is actually showing, when that is not simply
+             everything. A bare count leaves someone guessing why a piece they
+             expected is missing. --}}
+        @if ($filter->q !== null)
+            <p class="mt-6 font-sans text-[13px] text-ink-soft">
+                {{ __('shop.collection.results_for', ['count' => $products->count(), 'query' => $filter->q]) }}
+                <a href="{{ route('storefront.catalogue', $filter->toQuery(['q' => null]), absolute: false) }}#shop"
+                   class="ml-3 border-b border-current text-muted hover:text-ink">{{ __('shop.collection.clear_search') }}</a>
+            </p>
+        @endif
+
+        {{-- An empty shop and a search that found nothing are different
+             facts and need different sentences. --}}
         @if ($products->isEmpty())
             <div class="px-6 py-32 text-center font-display text-lg tracking-wide text-muted">
-                {{ __('shop.catalogue.empty') }}
+                {{ $totalProductCount === 0 ? __('shop.catalogue.empty') : __('shop.collection.no_matches') }}
             </div>
         @else
-            <div class="mt-10 grid grid-cols-1 gap-x-10 gap-y-[72px] [@media(min-width:560px)]:grid-cols-2 [@media(min-width:900px)]:grid-cols-3">
+            {{-- Four across on a desktop, which is what makes each tile (and so
+                 each photograph) smaller. Steps down 4 → 3 → 2 → 1 so the tile
+                 never has to carry a product photograph at a width where the
+                 name and price stop fitting on one line. --}}
+            {{-- 4 → 3 → 2 → 1. The breakpoints live in app.css as .product-grid
+                 rather than as Tailwind variants; see the comment there for
+                 why four steps that must cascade in order cannot be expressed
+                 reliably as arbitrary media variants. --}}
+            <div class="product-grid mt-10">
                 @foreach ($products as $product)
                     <x-product-tile :product="$product" />
                 @endforeach

@@ -72,3 +72,17 @@ it('points the footer shop link at the real catalogue route', function () {
         escape: false
     );
 });
+
+it('submits the header search to the catalogue without a script', function () {
+    // A plain GET form: Enter works with scripting off, and the result is a
+    // URL that can be shared. The #shop fragment lands on the grid rather than
+    // at the top of the hero, which is where the answer to a search is.
+    $this->get('/az')
+        ->assertSee('<form method="GET" action="'.route('storefront.catalogue', absolute: false).'"', escape: false)
+        ->assertSee('name="q"', escape: false);
+});
+
+it('keeps the search box filled in after a search', function () {
+    // An empty box beside a filtered grid reads as though the search was lost.
+    $this->get('/az?q=cüzdan')->assertSee('value="cüzdan"', escape: false);
+});

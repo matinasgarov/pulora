@@ -10,20 +10,48 @@ use Livewire\Component;
 #[Layout('components.layouts.storefront')]
 class CartPage extends Component
 {
-    public function mount(): void
+    /**
+     * boot(), not mount().
+     *
+     * The `setlocale` route middleware sets this default for ordinary page
+     * requests, but a Livewire action posts to /livewire/update, which never
+     * passes through the storefront's locale-prefixed routes. mount() does not
+     * run on those requests either — so after any action, the re-render hit
+     * route('storefront.checkout') with no {locale} to fill in and threw.
+     *
+     * Remove had this fault from the start; it took adding a second action to
+     * make anyone press a button on this page twice and see it. boot() runs on
+     * every request to the component, initial and subsequent alike.
+     */
+    public function boot(): void
     {
-        // Normally set by the `setlocale` route middleware before this
-        // component boots. Livewire component tests instantiate the
-        // component directly, bypassing that middleware, so the checkout
-        // link's route('storefront.checkout') would have no {locale} to
-        // fill in. Setting it here is idempotent in production — the
-        // middleware has already set it to the same value.
         URL::defaults(['locale' => app()->getLocale()]);
     }
 
     public function remove(CartService $cart, string $lineKey): void
     {
         $cart->remove($lineKey);
+
+        $this->dispatch('cart-updated');
+    }
+
+    /**
+     * Move a line by one, in either direction.
+     *
+     * The quantity is read from the cart rather than passed up from the page,
+     * so two quick clicks cannot both act on the same stale number and lose
+     * one of the steps. Stepping below one removes the line — see
+     * CartService::setQuantity().
+     */
+    public function step(CartService $cart, string $lineKey, int $by): void
+    {
+        $line = collect($cart->snapshot()->lines)->firstWhere('lineKey', $lineKey);
+
+        if ($line === null) {
+            return;
+        }
+
+        $cart->setQuantity($lineKey, $line->quantity + $by);
 
         $this->dispatch('cart-updated');
     }

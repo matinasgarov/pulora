@@ -20,16 +20,13 @@ it('sets the html lang attribute from the locale', function () {
     $this->get('/az')->assertSee('lang="az"', escape: false);
 });
 
-it('announces made-to-order in the visitor’s language', function () {
-    $this->get('/az')->assertSee('Hər parça Bakıda sifarişlə hazırlanır');
-});
-
 it('links the wordmark to the catalogue in the current locale', function () {
     $this->get('/az')->assertSee('href="/az"', escape: false);
 });
 
-// The announcement bar said "Bakıda" while the footer two hundred pixels below
-// said "Baku" — the same city, one localised and one not, on one page.
+// The header strip (since removed) said "Bakıda" while the footer two hundred
+// pixels below said "Baku" — the same city, one localised and one not, on one
+// page. The footer half of that pairing still needs pinning.
 it('localises the city in the footer', function () {
     $this->get('/az')->assertSee('Bakı, Səbail');
     $this->get('/en')->assertSee('Baku, Sabail');

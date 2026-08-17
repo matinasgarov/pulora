@@ -16,7 +16,7 @@
     <div class="relative aspect-[4/5] overflow-hidden bg-ground-alt">
         <a href="{{ $productUrl }}" class="absolute inset-0 block">
             @if ($image)
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->path) }}"
+                <img src="{{ asset('storage/'.$image->path) }}"
                      alt="{{ $image->alt_text }}"
                      class="h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-90">
             @else
@@ -43,13 +43,13 @@
 
     <div class="mt-[18px] flex items-baseline justify-between gap-3">
         <div>
-            <h2 class="font-sans text-[13px] text-ink">
+            <h2 class="font-sans text-[16px] leading-snug text-ink">
                 <a href="{{ $productUrl }}" class="hover:text-accent">{{ $product->name }}</a>
             </h2>
             @if ($product->leather)
                 <p class="mt-[5px] font-sans text-[11px] uppercase tracking-[0.1em] text-muted">{{ $product->leather }}</p>
             @endif
         </div>
-        <p class="shrink-0 font-sans text-[13px] text-ink"><x-price :minor="$product->base_price_minor" /></p>
+        <p class="shrink-0 font-sans text-[15px] text-ink"><x-price :minor="$product->base_price_minor" /></p>
     </div>
 </div>

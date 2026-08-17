@@ -64,7 +64,8 @@ dataset('pairings', [
     ['muted', 'ground', 'labels, footer', HOUSE_MINIMUM],
     ['muted-light', 'ground', 'captions, inactive nav', WCAG_AA_MINIMUM],
     ['accent', 'ground', 'wordmark, price, links', WCAG_AA_MINIMUM],
-    ['ink', 'ground-alt', 'copy on the announcement bar / deeper tile', HOUSE_MINIMUM],
+    ['danger', 'ground', 'validation errors', HOUSE_MINIMUM],
+    ['ink', 'ground-alt', 'copy on the deeper tile', HOUSE_MINIMUM],
     ['muted', 'ground-alt', 'secondary copy on the deeper tile', HOUSE_MINIMUM],
 ]);
 

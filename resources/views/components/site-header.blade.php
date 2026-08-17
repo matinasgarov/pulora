@@ -5,13 +5,6 @@
     $iconBtn = 'grid size-11 sm:size-[38px] place-items-center rounded-full text-ink transition-colors hover:bg-rule-light';
 @endphp
 
-{{-- Not part of the sticky header itself — the handoff's header is exactly
-     the three-column bar below. This strip predates this task and nothing in
-     the plan removes it, so it stays, just outside the sticky/blurred box. --}}
-<div class="bg-ground-alt py-2 text-center font-display text-xs tracking-widest text-muted">
-    {{ __('shop.announcement') }}
-</div>
-
 {{-- Sticky, translucent, blurred. z-20 sits below the drawer/scrim (z-50/60)
      so the drawer can cover it, and above ordinary page content. --}}
 <header class="sticky top-0 z-20 border-b border-rule bg-[rgba(250,249,246,0.94)] backdrop-blur-[8px]">
@@ -39,7 +32,7 @@
              the left). A matching text-indent adds that same space back on
              the left side, so the word sits back on-centre. --}}
         <a href="{{ route('storefront.catalogue', absolute: false) }}"
-           class="col-start-2 justify-self-center font-display text-2xl uppercase tracking-[0.42em] text-ink [text-indent:0.42em]">
+           class="col-start-2 justify-self-center font-display text-[26px] leading-none uppercase tracking-[0.42em] text-ink sm:text-[32px] [text-indent:0.42em]">
             Pulora
         </a>
 
@@ -53,7 +46,7 @@
             <label for="search-panel-toggle"
                    class="{{ $iconBtn }} hidden cursor-pointer sm:grid"
                    aria-label="{{ __('shop.nav.search') }}">
-                <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
                     <circle cx="9" cy="9" r="6" />
                     <line x1="13.5" y1="13.5" x2="18" y2="18" />
                 </svg>
@@ -62,7 +55,7 @@
             <a href="{{ route('storefront.cart', absolute: false) }}"
                class="{{ $iconBtn }} relative"
                aria-label="{{ __('shop.nav.cart') }}">
-                <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M4.5 7h11l-1 10.5h-9L4.5 7z" />
                     <path d="M7.25 7V5.5a2.75 2.75 0 0 1 5.5 0V7" />
                 </svg>
@@ -88,7 +81,7 @@
             <label for="nav-drawer-toggle"
                    class="{{ $iconBtn }} cursor-pointer"
                    aria-label="{{ __('shop.nav.menu') }}">
-                <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+                <svg viewBox="0 0 20 20" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="17" y2="6" />
                     <line x1="3" y1="10" x2="17" y2="10" />
                     <line x1="3" y1="14" x2="17" y2="14" />
@@ -97,23 +90,29 @@
         </div>
     </div>
 
-    {{-- Search panel. Filtering the grid is Phase 2 — the input takes text
-         but nothing reads it yet, and the note below says so rather than
-         shipping a control that silently does nothing. --}}
+    {{-- Search is a plain GET form pointing at the catalogue, so pressing
+         Enter works with scripting off and the result is a linkable URL. The
+         #shop fragment lands on the grid rather than at the top of the hero,
+         which is where the answer to a search actually is. --}}
     <div class="hidden border-t border-rule px-4 py-5 sm:px-11 sm:py-[22px] sm:pb-6 peer-checked/search:block">
-        <div class="flex items-center gap-4 border-b border-rule pb-3">
+        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}"
+              class="flex items-center gap-4 border-b border-rule pb-3">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" class="shrink-0 text-muted" aria-hidden="true">
                 <circle cx="9" cy="9" r="6" />
                 <line x1="13.5" y1="13.5" x2="18" y2="18" />
             </svg>
-            <input type="text" name="q"
+            <input type="search" name="q" value="{{ request('q') }}"
                    placeholder="{{ __('shop.search.placeholder') }}"
+                   aria-label="{{ __('shop.nav.search') }}"
                    class="min-w-0 flex-1 border-0 bg-transparent font-sans text-[15px] font-light text-ink placeholder:text-muted-lightest focus:outline-none">
+            <button type="submit"
+                    class="shrink-0 font-sans text-[11px] uppercase tracking-[0.16em] text-ink hover:text-accent">
+                {{ __('shop.nav.search') }}
+            </button>
             <label for="search-panel-toggle"
                    class="shrink-0 cursor-pointer font-sans text-[11px] uppercase tracking-[0.16em] text-muted hover:text-accent">
                 {{ __('shop.nav.close') }}
             </label>
-        </div>
-        <p class="mt-2 font-sans text-[11px] text-muted-lighter">{{ __('shop.search.note') }}</p>
+        </form>
     </div>
 </header>

@@ -13,6 +13,7 @@ final readonly class CartLine
         public int $unitPriceMinor,
         public array $personalization,
         public int $weightGrams,
+        public ?string $imagePath = null,
     ) {}
 
     public function lineTotalMinor(): int

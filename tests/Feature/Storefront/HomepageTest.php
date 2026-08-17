@@ -60,10 +60,26 @@ it('shows a real live count in the toolbar', function () {
     $this->get('/az')->assertSee(__('shop.collection.count', ['count' => 2]));
 });
 
-it('renders the phase-2 tabs, filter button and sort as disabled controls', function () {
+it('renders the toolbar as live controls, not disabled ones', function () {
     $content = $this->get('/az')->getContent();
 
-    expect(substr_count($content, 'disabled'))->toBeGreaterThanOrEqual(5); // 3 tabs + filter button + sort select
+    // These were rendered disabled while search and filtering were unbuilt.
+    // Now that they work, a `disabled` on any of them would be a regression
+    // straight back to a control that silently does nothing.
+    expect($content)->not->toContain('cursor-not-allowed');
+
+    $this->get('/az')
+        ->assertSee('name="sort"', false)
+        ->assertSee('name="category"', false)
+        ->assertSee('name="price"', false);
+});
+
+it('drives the catalogue from the query string so a filtered grid can be linked', function () {
+    // Not a Livewire island: state in the URL is what makes a filtered
+    // catalogue shareable, bookmarkable and reachable with the back button.
+    $this->get('/az?category=card&sort=price_desc')
+        ->assertSuccessful()
+        ->assertSee('aria-current="page"', false);
 });
 
 it('renders the bespoke starting price as a real AZN figure, not $220', function () {

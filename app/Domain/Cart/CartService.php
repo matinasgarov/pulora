@@ -42,6 +42,34 @@ class CartService
         $this->session->put(self::KEY, $lines);
     }
 
+    /**
+     * Set a line to an exact quantity.
+     *
+     * Dropping to zero removes the line rather than storing an empty one: a
+     * quantity control that can reach zero is the same gesture as removing, and
+     * a line of nothing is not a thing snapshot() should have to reason about.
+     * Unknown keys are ignored, because the line may have been retired between
+     * the page rendering and the click.
+     */
+    public function setQuantity(string $lineKey, int $quantity): void
+    {
+        $lines = $this->rawLines();
+
+        if (! isset($lines[$lineKey])) {
+            return;
+        }
+
+        if ($quantity < 1) {
+            $this->remove($lineKey);
+
+            return;
+        }
+
+        $lines[$lineKey]['quantity'] = $quantity;
+
+        $this->session->put(self::KEY, $lines);
+    }
+
     public function clear(): void
     {
         $this->session->forget(self::KEY);
@@ -54,7 +82,13 @@ class CartService
             return new CartSnapshot([]);
         }
 
-        $variants = Variant::with('product.personalizationOptions')
+        $variants = Variant::with([
+            'product.personalizationOptions',
+            // Ordered, not limited: a `limit` inside an eager load applies to
+            // the whole query rather than per parent unless it is written as a
+            // one-of-many relation, and a bag holds a handful of lines.
+            'product.images' => fn ($q) => $q->orderBy('sort_order'),
+        ])
             ->whereIn('id', array_column($raw, 'variant_id'))
             ->where('is_active', true)
             ->get()
@@ -78,6 +112,7 @@ class CartService
                     + $this->personalizationDeltaMinor($variant, $item['personalization']),
                 personalization: $item['personalization'],
                 weightGrams: $variant->weight_grams,
+                imagePath: $variant->product->images->first()?->path,
             );
         }
 

@@ -1,7 +1,6 @@
 <?php // lang/az/shop.php
 
 return [
-    'announcement' => 'Hər parça Bakıda sifarişlə hazırlanır',
     'nav' => [
         'catalogue' => 'Mağaza',
         'cart' => 'Səbət',
@@ -14,7 +13,6 @@ return [
     ],
     'search' => [
         'placeholder' => 'Məhsul axtarın — cüzdan, kart qabı, cordovan…',
-        'note' => 'Axtarış tezliklə aktivləşəcək.',
     ],
     'footer' => [
         'city' => 'Bakı',
@@ -72,6 +70,8 @@ return [
         'empty' => 'Səbətiniz boşdur.',
         'subtotal' => 'Ara cəmi',
         'remove' => 'Sil',
+        'increase' => 'Sayı artır',
+        'decrease' => 'Sayı azalt',
         'quantity' => 'Say',
         'checkout' => 'Sifarişi tamamla',
         'line_removed' => 'Bir məhsul artıq mövcud deyil və səbətinizdən silindi.',
@@ -133,6 +133,19 @@ return [
             'newest' => 'Yeni',
         ],
         'quick_add' => 'Səbətə at',
+        'apply' => 'Tətbiq et',
+        'clear' => 'Hamısını təmizlə',
+        'clear_search' => 'Təmizlə',
+        'filter_category' => 'Kateqoriya',
+        'filter_price' => 'Qiymət',
+        'price_bands' => [
+            'any' => 'İstənilən qiymət',
+            'under_50' => '50 AZN-dən aşağı',
+            'mid' => '50 — 100 AZN',
+            'over_100' => '100 AZN-dən yuxarı',
+        ],
+        'results_for' => '“:query” üçün :count nəticə',
+        'no_matches' => 'Buna uyğun heç nə tapılmadı.',
     ],
     'bespoke' => [
         'eyebrow' => 'Sifarişlə',
