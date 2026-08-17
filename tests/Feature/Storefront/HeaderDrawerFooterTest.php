@@ -86,3 +86,11 @@ it('keeps the search box filled in after a search', function () {
     // An empty box beside a filtered grid reads as though the search was lost.
     $this->get('/az?q=cüzdan')->assertSee('value="cüzdan"', escape: false);
 });
+
+it('points the footer category links at real filtered catalogue URLs', function () {
+    // These were plain text while category filtering was unbuilt. Now that it
+    // works, leaving them inert would be the dead-link problem in reverse.
+    $this->get('/az')
+        ->assertSee('href="'.route('storefront.catalogue', ['category' => 'wallet'], absolute: false).'#shop"', escape: false)
+        ->assertSee('href="'.route('storefront.catalogue', ['category' => 'card'], absolute: false).'#shop"', escape: false);
+});

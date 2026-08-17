@@ -43,6 +43,20 @@
        without reading as a warning sticker, and 7.08:1 on the ground. */
     --color-danger: #a3231d;
 
+    /* The dark end of the palette, sampled from the atelier photograph rather
+       than invented: #21140e is the second-largest tone in it (17% of the
+       frame), lifted a shade so it reads as a surface rather than a shadow.
+       The storefront was white and cream throughout, which left it with
+       nothing to sit against; this is what the hero and the footer are
+       anchored on. */
+    --color-bark: #241811;
+    /* Secondary text on bark — 7.27:1. The ordinary muted greys are all built
+       for the light ground and vanish here. */
+    --color-bark-muted: #b3a698;
+    /* The accent brown is only 3.50:1 on bark, so links and eyebrows on the
+       dark surface get a lighter cut of the same hue — 5.81:1. */
+    --color-accent-light: #b98d63;
+
     --color-rule: #eae5dc;
     --color-rule-light: #f0ece4;
     --color-border: #ded8cd;

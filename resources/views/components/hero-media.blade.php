@@ -24,12 +24,12 @@
                class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 ease-out motion-reduce:hidden"></video>
     @endif
 
-    {{-- Scrim. The hero copy is `text-ink` on the near-white ground, which the
-         contrast tests cover — but they test tokens against tokens, and a
-         photograph is neither. This keeps the bottom of the frame close to the
-         ground colour so the headline stays readable over whatever gets shot,
-         without dimming the whole picture. --}}
-    <div class="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-ground via-ground/75 to-transparent" aria-hidden="true"></div>
+    {{-- Scrim, dark rather than light. The contrast tests pin tokens against
+         tokens and a photograph is neither, so the copy needs a known surface
+         under it. Fading to bark rather than to the ground means the picture
+         keeps its own darkness instead of being bleached pale at the bottom to
+         accommodate near-black text — and the copy goes light to match. --}}
+    <div class="absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-bark via-bark/80 to-transparent" aria-hidden="true"></div>
 @else
     <x-placeholder-frame :caption="__('shop.placeholder.hero')" class="h-full w-full" />
 @endif

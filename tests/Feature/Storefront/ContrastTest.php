@@ -67,6 +67,11 @@ dataset('pairings', [
     ['danger', 'ground', 'validation errors', HOUSE_MINIMUM],
     ['ink', 'ground-alt', 'copy on the deeper tile', HOUSE_MINIMUM],
     ['muted', 'ground-alt', 'secondary copy on the deeper tile', HOUSE_MINIMUM],
+    // The dark end. The light-ground greys are unusable here, so bark carries
+    // its own set — and they are held to the house floor, not merely to AA.
+    ['ground', 'bark', 'hero headline, footer links', HOUSE_MINIMUM],
+    ['bark-muted', 'bark', 'hero body, footer headings and legal line', HOUSE_MINIMUM],
+    ['accent-light', 'bark', 'links and hover on the dark surface', HOUSE_MINIMUM],
 ]);
 
 it('keeps every storefront colour pairing legible', function (string $fg, string $bg, string $where, float $minimum) {

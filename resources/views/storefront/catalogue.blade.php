@@ -16,20 +16,38 @@
             <x-hero-media :poster="$heroPoster" :video-sources="$heroVideoSources" />
         </div>
 
+        {{-- The copy flips with the backdrop. On the photograph it sits on the
+             dark scrim and goes light; on the placeholder frame there is no
+             scrim and the ground is cream, so it stays ink. Hard-coding either
+             one would make the other unreadable. --}}
+        @php($onPhotograph = $heroPoster !== null)
+
         <div class="absolute inset-x-0 bottom-0 px-4 pb-10 sm:px-11 sm:pb-[60px]">
-            <h1 class="max-w-[600px] font-display text-[40px] leading-[1.04] tracking-[-0.01em] text-ink sm:text-[64px]">
+            <h1 @class([
+                    'max-w-[600px] font-display text-[40px] leading-[1.04] tracking-[-0.01em] sm:text-[64px]',
+                    'text-ground' => $onPhotograph,
+                    'text-ink' => ! $onPhotograph,
+                ])>
                 {{ __('shop.hero.line1') }}<br>
                 {{ __('shop.hero.line2') }}<br>
                 {{ __('shop.hero.line3') }}
             </h1>
-            <p class="mt-6 max-w-[400px] font-sans text-[15px] leading-relaxed text-ink-soft">
+            <p @class([
+                   'mt-6 max-w-[400px] font-sans text-[15px] leading-relaxed',
+                   'text-bark-muted' => $onPhotograph,
+                   'text-ink-soft' => ! $onPhotograph,
+               ])>
                 {{ __('shop.hero.body') }}
             </p>
             {{-- The bespoke destination doesn't exist until Phase 3 builds
                  the configurator, so this points at the catalogue below
                  (now the Collection section of this same page) instead of a
                  dead link. --}}
-            <a href="#shop" class="mt-8 inline-block border-b border-ink pb-0.5 font-sans text-[13px] uppercase tracking-[0.14em] text-ink hover:border-accent hover:text-accent">
+            <a href="#shop" @class([
+                   'mt-8 inline-block border-b pb-0.5 font-sans text-[13px] uppercase tracking-[0.14em]',
+                   'border-ground text-ground hover:border-accent-light hover:text-accent-light' => $onPhotograph,
+                   'border-ink text-ink hover:border-accent hover:text-accent' => ! $onPhotograph,
+               ])>
                 {{ __('shop.hero.cta') }}
             </a>
         </div>
