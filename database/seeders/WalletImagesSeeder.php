@@ -13,6 +13,21 @@ use Illuminate\Support\Str;
 
 class WalletImagesSeeder extends Seeder
 {
+    /**
+     * A product photograph is named letter-then-number: a1, k3, h4.
+     *
+     * The letter is the grouping key, so anything else dropped in this folder
+     * would be filed under its first character and silently become a product
+     * angle. hero.png joined the H wallet that way, and a stray
+     * "ChatGPT Image….png" joined C. Matching the scheme exactly is what makes
+     * the folder safe to keep other files in — and it excludes duplicates like
+     * "h4 (2)", which are the same shot twice.
+     */
+    public static function isProductPhoto(string $basename): bool
+    {
+        return preg_match('/^[a-z][0-9]+$/', strtolower($basename)) === 1;
+    }
+
     public function run(): void
     {
         $source = base_path('walletImages');
@@ -24,11 +39,14 @@ class WalletImagesSeeder extends Seeder
 
         File::ensureDirectoryExists($target);
 
+        $written = [];
+
         collect(File::files($source))
             ->filter(fn ($file) => in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'jfif'], true))
+            ->filter(fn ($file) => self::isProductPhoto($file->getBasename('.'.$file->getExtension())))
             ->sortBy(fn ($file) => strtolower($file->getFilename()))
             ->groupBy(fn ($file) => strtolower(substr($file->getBasename('.'.$file->getExtension()), 0, 1)))
-            ->each(function ($files, string $letter) use ($target) {
+            ->each(function ($files, string $letter) use ($target, &$written) {
                 $name = 'Card holder '.strtoupper($letter);
                 $slug = Str::slug($name);
 
@@ -76,17 +94,21 @@ class WalletImagesSeeder extends Seeder
 
                 ProductImage::where('product_id', $product->id)->delete();
 
-                $files->values()->each(function ($file, int $index) use ($product, $target) {
+                $files->values()->each(function ($file, int $index) use ($product, $target, &$written) {
                     // Always .jpg: the normalizer re-encodes, so the source
                     // extension (.jfif, .png) says nothing about the output.
                     $filename = strtolower($file->getBasename('.'.$file->getExtension())).'.jpg';
                     $destination = $target.DIRECTORY_SEPARATOR.$filename;
 
-                    // Straight copy would put 0.63-to-2.22 aspect ratios into a
-                    // fixed 4/5 tile, which is what made the grid look uneven.
+                    // Straight copy would put mismatched aspect ratios and
+                    // white sweeps onto the page unmodified — see
+                    // ProductImageNormalizer for area-based sizing and why the
+                    // sweep is tinted to --color-ground rather than left white.
                     if (! app(ProductImageNormalizer::class)->normalize($file->getPathname(), $destination)) {
                         File::copy($file->getPathname(), $destination);
                     }
+
+                    $written[] = $filename;
 
                     ProductImage::create([
                         'product_id' => $product->id,
@@ -99,5 +121,14 @@ class WalletImagesSeeder extends Seeder
                     ]);
                 });
             });
+
+        // Anything left in the target directory that this run did not write is
+        // an image whose source was renamed, replaced or removed. Left alone it
+        // sits there forever, and the last one that mattered was hero.png being
+        // served as a product angle. Only this directory is touched, and only
+        // files the seeder itself produces.
+        collect(File::files($target))
+            ->reject(fn ($file) => in_array($file->getFilename(), $written, true))
+            ->each(fn ($file) => File::delete($file->getPathname()));
     }
 }

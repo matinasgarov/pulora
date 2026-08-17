@@ -26,5 +26,23 @@ export default function initCatalogueFilters() {
     submit.hidden = true;
     submit.classList.add('hidden');
 
-    sort.addEventListener('change', () => form.submit());
+    // requestSubmit(), not submit(): the latter navigates without firing the
+    // submit event, which would skip the cleanup below and leave "?price=" on
+    // every URL produced by the sort dropdown.
+    sort.addEventListener('change', () => form.requestSubmit());
+
+    // "Any price" and "All" are empty values, and an unsearched grid has no
+    // query — submitted as-is they leave "?price=&q=" trailing on every URL.
+    // Disabling them drops them from serialisation, which happens after this
+    // handler runs. Without a script the URL simply carries the empties; they
+    // read as absent server-side either way.
+    form.addEventListener('submit', () => {
+        form.querySelectorAll('input[name], select[name]').forEach((field) => {
+            const empty = field.type === 'radio' ? field.checked && field.value === '' : !field.value;
+
+            if (empty) {
+                field.disabled = true;
+            }
+        });
+    });
 }

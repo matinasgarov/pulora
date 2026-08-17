@@ -2,10 +2,11 @@
 
 {{-- One frame in view at a time, arrows over it, thumbnails under it.
 
-     The frame is 4/5 because that is the ratio ProductImageNormalizer writes,
-     so `object-cover` crops nothing and no letterbox bands appear beside a
-     product. The white frame background matches the normalized sweep, so the
-     photograph reaches the frame edge without a seam.
+     The frame uses `contain`, so source photos keep their own orientation and
+     are never cropped just to fill a storefront shape. Its background is the
+     ground colour rather than white, because a 4/5 photograph in a square frame
+     is letterboxed — and the normalizer tints each sweep to the ground, so a
+     white frame put bright bands down both sides of every warm photograph.
 
      Without JavaScript this is still a horizontal scroller — it swipes on
      touch, scrolls on a trackpad, and the thumbnails are ordinary anchors that
@@ -22,10 +23,10 @@
         @foreach ($images as $index => $image)
             <div id="{{ $galleryId }}-{{ $index }}"
                  data-gallery-frame
-                 class="relative aspect-[4/5] w-full shrink-0 snap-center overflow-hidden bg-white lg:aspect-auto lg:h-[min(74vh,760px)]">
-                {{-- `contain`, so a short frame never crops the product. The
-                     letterboxing it leaves is invisible: the frame is white and
-                     so is the normalized sweep. --}}
+                 class="relative aspect-square w-full shrink-0 snap-center overflow-hidden bg-ground lg:aspect-auto lg:h-[min(74vh,760px)]">
+                {{-- `contain`, so the frame never crops the product. The
+                     letterboxing it leaves is invisible because the frame and
+                     the normalized sweep are both --color-ground. --}}
                 <img src="{{ asset('storage/'.$image->path) }}"
                      alt="{{ $image->alt_text }}"
                      data-gallery-image
@@ -58,8 +59,8 @@
                 <a href="#{{ $galleryId }}-{{ $index }}"
                    data-gallery-thumb="{{ $index }}"
                    aria-label="{{ __('shop.product.gallery.go_to', ['number' => $index + 1]) }}"
-                   class="aspect-[4/5] w-[68px] shrink-0 overflow-hidden border border-transparent bg-white aria-[current=true]:border-ink">
-                    <img src="{{ asset('storage/'.$image->path) }}" alt="" class="h-full w-full object-cover">
+                   class="aspect-square w-[68px] shrink-0 overflow-hidden border border-transparent bg-ground aria-[current=true]:border-ink">
+                    <img src="{{ asset('storage/'.$image->path) }}" alt="" class="h-full w-full object-contain">
                 </a>
             @endforeach
         </div>

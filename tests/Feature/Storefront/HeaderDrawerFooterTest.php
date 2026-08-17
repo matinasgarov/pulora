@@ -78,7 +78,7 @@ it('submits the header search to the catalogue without a script', function () {
     // URL that can be shared. The #shop fragment lands on the grid rather than
     // at the top of the hero, which is where the answer to a search is.
     $this->get('/az')
-        ->assertSee('<form method="GET" action="'.route('storefront.catalogue', absolute: false).'"', escape: false)
+        ->assertSee('<form method="GET" action="'.route('storefront.catalogue', absolute: false).'#shop"', escape: false)
         ->assertSee('name="q"', escape: false);
 });
 

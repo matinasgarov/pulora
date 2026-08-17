@@ -10,15 +10,15 @@
 @endphp
 
 <div class="group">
-    {{-- 4/5 frame, overflow hidden. The badge and quick-add bar sit on top of
+    {{-- Square frame, overflow hidden. The badge and quick-add bar sit on top of
          (not inside) the link, so the quick-add button can intercept clicks
          instead of the whole frame navigating away. --}}
-    <div class="relative aspect-[4/5] overflow-hidden bg-ground-alt">
+    <div class="relative aspect-square overflow-hidden bg-ground">
         <a href="{{ $productUrl }}" class="absolute inset-0 block">
             @if ($image)
                 <img src="{{ asset('storage/'.$image->path) }}"
                      alt="{{ $image->alt_text }}"
-                     class="h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-90">
+                     class="h-full w-full object-contain transition-opacity duration-500 group-hover:opacity-90">
             @else
                 <x-placeholder-frame
                     :caption="__('shop.placeholder.tile', ['name' => $product->name])"

@@ -117,3 +117,28 @@ it('keeps the search when a category tab is followed', function () {
     // click is the classic way a filter bar becomes annoying.
     $this->get('/en?q=buttero')->assertSee('q=buttero&amp;category=wallet', false);
 });
+
+it('points the filter form at the grid, not the top of the page', function () {
+    // A GET submit replaces the action URL's query but keeps its fragment.
+    // Without #shop on the action, applying a sort or a filter landed back at
+    // the very top of the page — the hero, if there is a photograph in it —
+    // instead of back at the grid the control lives in.
+    $this->get('/en')->assertSee(
+        '<form method="GET" action="'.route('storefront.catalogue', absolute: false).'#shop"',
+        escape: false
+    );
+});
+
+it('does not carry an empty search through the filter form', function () {
+    // The hidden field exists to preserve an active search across a filter
+    // change. With no search running there is nothing to preserve, and
+    // submitting it blank leaves "?q=" on every filtered URL.
+    //
+    // Asserted against the hidden input specifically: the header's own search
+    // box is also name="q" and is legitimately empty here.
+    $this->get('/en?category=wallet')
+        ->assertDontSee('<input type="hidden" name="q"', escape: false);
+
+    $this->get('/en?category=wallet&q=buttero')
+        ->assertSee('<input type="hidden" name="q" value="buttero">', escape: false);
+});

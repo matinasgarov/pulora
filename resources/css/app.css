@@ -178,6 +178,13 @@ body {
    header. No Tailwind height utility is applied alongside this — which of the
    two would win is decided by generated stylesheet order rather than by
    anything visible in the markup. */
+/* Anything jumped to by a #fragment has to clear the sticky header, or it
+   lands underneath it — the Collection heading was arriving hidden behind the
+   bar every time a filter was applied. */
+[id] {
+    scroll-margin-top: var(--header-height);
+}
+
 .hero-bleed {
     margin-top: calc(-1 * var(--header-height));
     /* Fallback first for anything without svh. */

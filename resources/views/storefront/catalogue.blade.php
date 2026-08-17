@@ -77,7 +77,7 @@
          when it is present, so the section's own top padding gives way to it
          rather than stacking on top of it. --}}
     <section id="shop" @class([
-        'px-4 sm:px-11',
+        'bg-white px-4 sm:px-11',
         'pt-[52px]' => $heroPoster !== null,
         'pt-[110px]' => $heroPoster === null,
     ])>
@@ -111,10 +111,18 @@
              the panel's fields submit together and the URL ends up holding the
              whole state. The panel opens with a checkbox rather than a script,
              the same way the header's search panel does. --}}
-        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}" data-catalogue-filters>
+        {{-- The action carries #shop. A GET submit replaces the action URL's
+             query and keeps its fragment, so applying a filter returns to the
+             grid instead of throwing you back to the top of the hero — which is
+             what happened while the fragment lived only on the tab links. --}}
+        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}#shop" data-catalogue-filters>
             {{-- Carries the active search through a filter change. Without it,
-                 narrowing by price would quietly throw the search away. --}}
-            <input type="hidden" name="q" value="{{ $filter->q }}">
+                 narrowing by price would quietly throw the search away. Omitted
+                 when empty rather than submitted blank, so filtering from an
+                 unsearched grid does not leave "?q=" in the URL. --}}
+            @if ($filter->q !== null)
+                <input type="hidden" name="q" value="{{ $filter->q }}">
+            @endif
 
             <input type="checkbox" id="filter-panel-toggle" class="peer/filters sr-only">
 

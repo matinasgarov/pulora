@@ -102,7 +102,7 @@
          #shop fragment lands on the grid rather than at the top of the hero,
          which is where the answer to a search actually is. --}}
     <div class="hidden border-t border-rule px-4 py-5 text-ink sm:px-11 sm:py-[22px] sm:pb-6 peer-checked/search:block">
-        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}"
+        <form method="GET" action="{{ route('storefront.catalogue', absolute: false) }}#shop"
               class="flex items-center gap-4 border-b border-rule pb-3">
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" class="shrink-0 text-muted" aria-hidden="true">
                 <circle cx="9" cy="9" r="6" />
