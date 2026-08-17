@@ -5,11 +5,15 @@
          has been dropped into public/media (see App\Support\HeroMedia); with
          nothing there it stays the placeholder frame naming the shot owed. --}}
     <section @class([
-        'relative h-[84vh] min-h-[580px] overflow-hidden',
-        // Slides up under the sticky header so the photograph reaches the top
-        // of the window. Only the hero opts in, so every other page — and this
-        // one without a photograph — lays out untouched.
+        'relative min-h-[580px] overflow-hidden',
+        // With a photograph: the full window, slid up under the sticky header
+        // so the picture reaches the top of the screen and nothing of the next
+        // section shows beneath it. Height comes from .hero-bleed.
         'hero-bleed' => $heroPoster !== null,
+        // Without one, the placeholder frame stays short of full height —
+        // a whole screen of "photography pending" is a worse first impression
+        // than a partial one.
+        'h-[84vh]' => $heroPoster === null,
     ])>
         {{-- Wrapped rather than passed `absolute inset-0` straight to the
              component: the component's own root is already `relative` (so

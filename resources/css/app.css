@@ -149,8 +149,18 @@ body {
     color: var(--color-bark);
 }
 
+/* The hero with a photograph in it: the full window, starting behind the
+   header. No Tailwind height utility is applied alongside this — which of the
+   two would win is decided by generated stylesheet order rather than by
+   anything visible in the markup. */
 .hero-bleed {
     margin-top: calc(-1 * var(--header-height));
+    /* Fallback first for anything without svh. */
+    height: 100vh;
+    /* Small-viewport height: sized as though the mobile browser's chrome is
+       showing, so the hero does not jump — and the section below does not
+       shift — the moment that chrome collapses on scroll. */
+    height: 100svh;
 }
 
 /* The descent into the footer.
