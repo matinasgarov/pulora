@@ -9,7 +9,7 @@
     $canQuickAdd = $product->canQuickAdd();
 @endphp
 
-<div class="group">
+<div class="group" data-reveal>
     {{-- Square frame, overflow hidden. The badge and quick-add bar sit on top of
          (not inside) the link, so the quick-add button can intercept clicks
          instead of the whole frame navigating away. --}}

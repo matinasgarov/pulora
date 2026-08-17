@@ -2,8 +2,6 @@
 
 namespace App\Support;
 
-use Illuminate\Support\Facades\File;
-
 /**
  * Finds the homepage hero's photograph and, optionally, its video loop.
  *
@@ -19,30 +17,29 @@ use Illuminate\Support\Facades\File;
  * With no photograph present the homepage keeps rendering the placeholder frame
  * that names the shot still owed, so the gap stays visible rather than becoming
  * a blank box.
+ *
+ * The still is resolved by PublicMedia, which the bespoke section uses too; only
+ * the video loop is the hero's own, since nothing else on the site has one.
  */
 class HeroMedia
 {
     /** Public sub-directory the files live in. */
-    public const DIRECTORY = 'media';
-
-    /** Most efficient format first — the first one present is the one used. */
-    private const POSTERS = ['hero.avif', 'hero.webp', 'hero.jpg', 'hero.jpeg'];
+    public const DIRECTORY = PublicMedia::DIRECTORY;
 
     /** In `<source>` order, so a browser takes the first it can play. */
     private const VIDEOS = ['hero.webm' => 'video/webm', 'hero.mp4' => 'video/mp4'];
 
+    private readonly PublicMedia $media;
+
     /** Overridable so tests do not have to write into the real public directory. */
-    public function __construct(private readonly ?string $directory = null) {}
+    public function __construct(?string $directory = null)
+    {
+        $this->media = new PublicMedia($directory);
+    }
 
     public function poster(): ?string
     {
-        foreach (self::POSTERS as $file) {
-            if ($this->exists($file)) {
-                return $this->url($file);
-            }
-        }
-
-        return null;
+        return $this->media->image('hero');
     }
 
     /** @return list<array{src: string, type: string}> */
@@ -58,21 +55,11 @@ class HeroMedia
         $sources = [];
 
         foreach (self::VIDEOS as $file => $type) {
-            if ($this->exists($file)) {
-                $sources[] = ['src' => $this->url($file), 'type' => $type];
+            if ($this->media->exists($file)) {
+                $sources[] = ['src' => $this->media->url($file), 'type' => $type];
             }
         }
 
         return $sources;
-    }
-
-    private function exists(string $file): bool
-    {
-        return File::exists(($this->directory ?? public_path(self::DIRECTORY)).DIRECTORY_SEPARATOR.$file);
-    }
-
-    private function url(string $file): string
-    {
-        return asset(self::DIRECTORY.'/'.$file);
     }
 }

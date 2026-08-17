@@ -135,6 +135,11 @@ return [
         'quick_add' => 'Səbətə at',
         'apply' => 'Tətbiq et',
         'clear' => 'Hamısını təmizlə',
+        'pagination' => [
+            'label' => 'Kolleksiya səhifələri',
+            'previous' => 'Əvvəlki',
+            'next' => 'Növbəti',
+        ],
         'clear_search' => 'Təmizlə',
         'filter_category' => 'Kateqoriya',
         'filter_price' => 'Qiymət',
@@ -148,6 +153,7 @@ return [
         'no_matches' => 'Buna uyğun heç nə tapılmadı.',
     ],
     'bespoke' => [
+        'poster_alt' => 'Dəzgah arxasında yarımay bıçaqla aşılanmış dəri parçasını kəsən usta; yanında mis pərgar və sap makaraları.',
         'eyebrow' => 'Sifarişlə',
         'heading' => 'Sizin üçün, sıfırdan',
         'body' => 'Öz ölçünüzə, öz dərinizə və öz təşəbbüsünüzə görə əllə hazırlanan bir parça. Bakı emalatxanamızda sizinlə birlikdə layihələndirir, kəsir və tikirik.',

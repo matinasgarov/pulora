@@ -269,6 +269,21 @@ body {
     outline-offset: 3px;
 }
 
+/* Scroll reveal. Gated on `.js` so nothing is hidden without a script — the
+   reduced-motion block below already collapses the transition, which leaves
+   those visitors with the content rather than without it. */
+.js [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 600ms ease-out, transform 600ms ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+}
+
+.js [data-reveal][data-revealed] {
+    opacity: 1;
+    transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

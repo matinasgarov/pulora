@@ -5,6 +5,8 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\Variant;
 use App\Domain\Catalog\ProductTag;
 use App\Support\HeroMedia;
+use App\Support\PublicMedia;
+use Illuminate\Support\Facades\File;
 
 it('renders the hero copy', function () {
     $this->get('/az')
@@ -52,6 +54,34 @@ it('renders the collection title and the bespoke and atelier sections', function
         ->assertSee(__('shop.collection.title'))
         ->assertSee(__('shop.bespoke.heading'))
         ->assertSee(__('shop.atelier.quote'));
+});
+
+it('shows the bespoke photograph in place of its placeholder frame', function () {
+    $this->get('/az')
+        ->assertSee('media/bespoke.', false)
+        ->assertSee(__('shop.bespoke.poster_alt'))
+        ->assertDontSee(__('shop.placeholder.bespoke'));
+});
+
+it('keeps the placeholder frame in the bespoke section until a photograph is dropped in', function () {
+    // The section has to survive the file being absent — that is the whole point
+    // of resolving it by convention rather than hard-coding the path into the
+    // view. Pointed at an empty directory rather than moving the real file.
+    $empty = sys_get_temp_dir().DIRECTORY_SEPARATOR.'no-media-'.uniqid();
+    File::ensureDirectoryExists($empty);
+
+    $this->app->instance(PublicMedia::class, new PublicMedia($empty));
+
+    $this->get('/az')
+        ->assertSee(__('shop.placeholder.bespoke'))
+        ->assertDontSee('media/bespoke.', false);
+
+    File::deleteDirectory($empty);
+});
+
+it('does not let the bespoke photograph block the first paint', function () {
+    // It sits a full screen below the fold, behind the entire product grid.
+    $this->get('/az')->assertSee('loading="lazy"', false);
 });
 
 it('shows a real live count in the toolbar', function () {

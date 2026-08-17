@@ -76,12 +76,17 @@
          homepage. The descent band above supplies most of the breathing room
          when it is present, so the section's own top padding gives way to it
          rather than stacking on top of it. --}}
+    {{-- Ground, not white. The tile frames and the sweep baked into every
+         photograph are both --color-ground, so a white section put cream squares
+         on a white sheet and made a chequerboard of the grid. It also sat as a
+         white block between the hero descent and the footer fade, which both
+         start and end on the ground colour. --}}
     <section id="shop" @class([
-        'bg-white px-4 sm:px-11',
+        'bg-ground px-4 sm:px-11',
         'pt-[52px]' => $heroPoster !== null,
         'pt-[110px]' => $heroPoster === null,
     ])>
-        <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4" data-reveal>
             <h2 class="font-display text-[13px] uppercase tracking-[0.28em] text-ink">
                 {{ __('shop.collection.title') }}
             </h2>
@@ -126,7 +131,7 @@
 
             <input type="checkbox" id="filter-panel-toggle" class="peer/filters sr-only">
 
-            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-rule py-4 font-sans text-[11px] uppercase tracking-[0.16em] text-muted">
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-rule py-4 font-sans text-[11px] uppercase tracking-[0.16em] text-muted" data-reveal>
                 <label for="filter-panel-toggle" class="flex cursor-pointer items-center gap-2 hover:text-ink">
                     <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
                         <line x1="3" y1="6" x2="17" y2="6" />
@@ -134,7 +139,7 @@
                         <line x1="3" y1="14" x2="17" y2="14" />
                     </svg>
                     <span>{{ __('shop.collection.filters') }}</span>
-                    <span>({{ __('shop.collection.count', ['count' => $products->count()]) }})</span>
+                    <span>({{ __('shop.collection.count', ['count' => $products->total()]) }})</span>
                 </label>
 
                 <div class="flex items-center gap-3">
@@ -210,7 +215,7 @@
              expected is missing. --}}
         @if ($filter->q !== null)
             <p class="mt-6 font-sans text-[13px] text-ink-soft">
-                {{ __('shop.collection.results_for', ['count' => $products->count(), 'query' => $filter->q]) }}
+                {{ __('shop.collection.results_for', ['count' => $products->total(), 'query' => $filter->q]) }}
                 <a href="{{ route('storefront.catalogue', $filter->toQuery(['q' => null]), absolute: false) }}#shop"
                    class="ml-3 border-b border-current text-muted hover:text-ink">{{ __('shop.collection.clear_search') }}</a>
             </p>
@@ -236,15 +241,30 @@
                     <x-product-tile :product="$product" />
                 @endforeach
             </div>
+
+            <x-catalogue-pagination :paginator="$products" />
         @endif
     </section>
 
     {{-- Bespoke feature. --}}
     <section class="mt-[120px] border-t border-rule">
         <div class="grid grid-cols-1 lg:grid-cols-2">
-            <x-placeholder-frame :caption="__('shop.placeholder.bespoke')" class="min-h-[620px]" />
+            {{-- `cover`, not `contain`: this is a scene rather than a product,
+                 so filling the column matters more than showing every edge of
+                 the frame. The crop is centred and the subject is centred in
+                 the source, so the hands survive the narrow column on tablet.
+                 Lazy because it sits a full screen below the fold. --}}
+            @if ($bespokePoster)
+                <img src="{{ $bespokePoster }}"
+                     alt="{{ __('shop.bespoke.poster_alt') }}"
+                     loading="lazy"
+                     data-reveal
+                     class="h-full min-h-[620px] w-full object-cover">
+            @else
+                <x-placeholder-frame :caption="__('shop.placeholder.bespoke')" class="min-h-[620px]" />
+            @endif
 
-            <div class="flex flex-col justify-center px-4 py-16 sm:px-11 lg:px-20 lg:py-[110px]">
+            <div class="flex flex-col justify-center px-4 py-16 sm:px-11 lg:px-20 lg:py-[110px]" data-reveal>
                 <p class="font-sans text-[11px] uppercase tracking-[0.2em] text-accent">
                     {{ __('shop.bespoke.eyebrow') }}
                 </p>
@@ -284,7 +304,7 @@
 
     {{-- Atelier — centred pull quote. The link has no destination yet, so it
          renders as plain text rather than a dead anchor. --}}
-    <section id="atelier" class="mx-auto mt-0 max-w-[680px] border-t border-rule px-4 py-[130px] text-center sm:px-11">
+    <section id="atelier" data-reveal class="mx-auto mt-0 max-w-[680px] border-t border-rule px-4 py-[130px] text-center sm:px-11">
         <p class="font-sans text-[11px] uppercase tracking-[0.2em] text-accent">
             {{ __('shop.atelier.eyebrow') }}
         </p>

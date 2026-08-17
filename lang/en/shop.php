@@ -135,6 +135,11 @@ return [
         'quick_add' => 'Add to bag',
         'apply' => 'Apply',
         'clear' => 'Clear all',
+        'pagination' => [
+            'label' => 'Collection pages',
+            'previous' => 'Previous',
+            'next' => 'Next',
+        ],
         'clear_search' => 'Clear',
         'filter_category' => 'Category',
         'filter_price' => 'Price',
@@ -148,6 +153,7 @@ return [
         'no_matches' => 'Nothing matches that yet.',
     ],
     'bespoke' => [
+        'poster_alt' => 'A craftsman cutting a piece of tanned leather with a round knife at the workbench, brass dividers and thread spools beside him.',
         'eyebrow' => 'Bespoke',
         'heading' => 'Made for you, from scratch',
         'body' => 'A hand-made piece built to your measurements, your leather, and your idea. We design, cut and stitch it with you in our Baku workshop.',
