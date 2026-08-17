@@ -55,6 +55,20 @@ class ProductImageNormalizer
      *  bigger change than the seam it fixes. */
     private const MAX_SWEEP_LIFT = 30;
 
+    /**
+     * The sweep is re-tinted to this, which is --color-ground.
+     *
+     * Duplicated from the stylesheet on purpose: this is baked into the JPEGs at
+     * seed time, so it cannot read a CSS variable. If --color-ground changes,
+     * re-run WalletImagesSeeder — a test pins the two together so the drift is
+     * caught rather than discovered.
+     */
+    private const SWEEP = [0xf0, 0xe9, 0xdd];
+
+    /** Luma band below the cutoff over which the re-tint fades out, so the
+     *  product's edge is not ringed by a hard line where the recolour stops. */
+    private const TINT_RAMP = 26;
+
     public function normalize(string $sourcePath, string $targetPath): bool
     {
         $image = $this->read($sourcePath);
@@ -96,16 +110,22 @@ class ProductImageNormalizer
         $drawH = max(1, (int) round($cropH * $scale));
 
         $canvas = imagecreatetruecolor(self::CANVAS_W, self::CANVAS_H);
-        imagefill($canvas, 0, 0, imagecolorallocate($canvas, 255, 255, 255));
+        imagefill($canvas, 0, 0, imagecolorallocate($canvas, ...self::SWEEP));
+
+        $dstX = (int) round((self::CANVAS_W - $drawW) / 2);
+        $dstY = (int) round((self::CANVAS_H - $drawH) / 2);
 
         imagecopyresampled(
             $canvas, $image,
-            (int) round((self::CANVAS_W - $drawW) / 2),
-            (int) round((self::CANVAS_H - $drawH) / 2),
+            $dstX, $dstY,
             $left, $top,
             $drawW, $drawH,
             $cropW, $cropH
         );
+
+        // Only the drawn rectangle needs re-tinting; the rest of the canvas was
+        // filled with the sweep colour to begin with.
+        $this->tintSweep($canvas, $dstX, $dstY, $drawW, $drawH);
 
         imagejpeg($canvas, $targetPath, 88);
 
@@ -113,6 +133,51 @@ class ProductImageNormalizer
         imagedestroy($image);
 
         return true;
+    }
+
+    /**
+     * Recolours the photograph's own sweep to the page's ground colour.
+     *
+     * The product is left alone; only the near-white surround is remapped, and
+     * it is remapped rather than flooded so the shadow under the product keeps
+     * its shape — a shadow is a darker sweep, and it stays a darker sweep of the
+     * new colour. Below the cutoff the effect fades out over TINT_RAMP, because
+     * stopping it abruptly draws a visible ring around the product.
+     *
+     * The alternative was to leave the images on white. On the old cream ground
+     * that was invisible; on a brown one every tile became a bright white card.
+     */
+    private function tintSweep(\GdImage $canvas, int $x0, int $y0, int $w, int $h): void
+    {
+        $cutoff = 255 - self::MAX_SWEEP_LIFT;
+
+        for ($y = $y0; $y < $y0 + $h; $y++) {
+            for ($x = $x0; $x < $x0 + $w; $x++) {
+                $rgb = imagecolorat($canvas, $x, $y);
+                $luma = $this->luma($rgb);
+
+                if ($luma < $cutoff - self::TINT_RAMP) {
+                    continue;
+                }
+
+                // 0 at the bottom of the ramp, 1 once clearly in the sweep.
+                $strength = min(1.0, ($luma - ($cutoff - self::TINT_RAMP)) / self::TINT_RAMP);
+                $scale = $luma / 255;
+
+                $mixed = [];
+
+                foreach ([16, 8, 0] as $i => $shift) {
+                    $original = ($rgb >> $shift) & 0xFF;
+                    $tinted = self::SWEEP[$i] * $scale;
+                    $mixed[] = (int) round($original + ($tinted - $original) * $strength);
+                }
+
+                imagesetpixel($canvas, $x, $y, imagecolorallocate($canvas, ...array_map(
+                    fn (int $v): int => max(0, min(255, $v)),
+                    $mixed
+                )));
+            }
+        }
     }
 
     private function read(string $path): ?\GdImage

@@ -13,28 +13,42 @@
 @source "../**/*.vue";
 
 @theme {
-    /* Warm near-white, not white. The ground is what makes it read as premium. */
-    --color-ground: #faf9f6;
-    /* A half-step deeper, so the announcement bar and product photography on a
-       neutral seamless background blend into one continuous field. */
-    --color-ground-alt: #f6f3ed;
+    /* A soft brown, not a cream. It began as #faf9f6 and warmed twice: once
+       for the palette, and again because arriving on cream straight off the
+       dark hero was a hard edge no amount of scrim could soften. Warming the
+       ground cost three tokens, which are darkened below to hold their floors
+       on it — see ContrastTest. */
+    --color-ground: #f0e9dd;
+    /* A half-step deeper, so product photography on a neutral seamless
+       background blends into one continuous field. */
+    --color-ground-alt: #e9e1d2;
 
     --color-ink: #171310;
     --color-ink-soft: #4c443c;
 
-    --color-muted: #6e655b;
-    /* Darkened from the handoff's #8E857A (3.45:1) to clear the house 5.0:1
-       floor on --color-ground; see ContrastTest. */
-    --color-muted-light: #7a7166;
-    /* Darkened from the handoff's #A79E92 (2.51:1). Still below the house
-       floor at 4.0:1 — used only for large or non-essential text (inactive
-       tabs, legal line), held to a documented 3.0:1 lower floor instead. */
-    --color-muted-lighter: #8a8175;
-    /* Darkened from the handoff's #B4AB9E (2.15:1) to 3.4:1. Input
-       placeholders only — non-essential text, same lower floor as above. */
-    --color-muted-lightest: #958c80;
+    /* #6e655b on the old cream; darkened with the ground so it still clears
+       the house 5.0:1 floor on both the ground and the deeper tile. */
+    --color-muted: #645c53;
+    /* Darkened from the handoff's #8E857A (3.45:1), and again with the ground.
+       Holds real WCAG AA with a margin rather than landing on 4.5 exactly. */
+    --color-muted-light: #6e665c;
+    /* Darkened from the handoff's #A79E92 (2.51:1), and again with the ground.
+       Still below the house floor at 4.18:1 — used only for large or
+       non-essential text (inactive tabs, legal line), held to a documented
+       3.0:1 lower floor instead. */
+    --color-muted-lighter: #756e63;
+    /* Darkened from the handoff's #B4AB9E (2.15:1), and again with the ground.
+       Input placeholders only — non-essential text, same lower floor as above.
+       ContrastTest caught both of these when the ground warmed: at the old
+       values they had fallen to 3.18:1 and 2.74:1. */
+    --color-muted-lightest: #8b8277;
 
-    --color-accent: #8a6a4b;
+    /* The handoff's #8a6a4b, darkened one step. It measured 4.70:1 on the
+       original cream — barely over AA — so warming the ground to a brown put
+       the accent (itself a brown) under the floor at 4.10:1. This is the
+       consequence of the warmer palette, not a change of mind about the hue:
+       same colour, one step deeper, 4.66:1. */
+    --color-accent: #7f6245;
 
     /* Validation errors. The accent brown was doing this job, which meant a
        failed field looked like every other emphasised thing on the page — the
@@ -63,11 +77,13 @@
        behind text — see the fade's own comment for why it cannot be. */
     --color-bark-fade: #c0a992;
 
-    --color-rule: #eae5dc;
-    --color-rule-light: #f0ece4;
-    --color-border: #ded8cd;
-    --color-border-alt: #e2dcd2;
-    --color-border-alt2: #e4ded3;
+    /* Hairlines, warmed with the ground. Left as they were, they read as grey
+       lines drawn on a brown page. */
+    --color-rule: #eae2d2;
+    --color-rule-light: #f0e8da;
+    --color-border: #ded5c4;
+    --color-border-alt: #e2d9c9;
+    --color-border-alt2: #e4dbca;
 
     --font-display: 'Bodoni Moda', ui-serif, Georgia, serif;
     --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
@@ -78,7 +94,7 @@ body {
 }
 
 ::selection {
-    background: #e4ded3;
+    background: #e4dbca;
 }
 
 /* The header.
@@ -170,6 +186,24 @@ body {
        showing, so the hero does not jump — and the section below does not
        shift — the moment that chrome collapses on scroll. */
     height: 100svh;
+}
+
+/* The climb out of the hero.
+ *
+ * The mirror of the footer's descent. Even with a soft-brown ground, cutting
+ * straight from the hero's near-black bark to it is a hard line across the
+ * page — the picture stops rather than ends. This carries bark back up to the
+ * ground through the same warm tan, so the eye leaves the photograph the way
+ * it arrives at the footer. Empty, for the same contrast reason. */
+.hero-descent {
+    height: 200px;
+    background: linear-gradient(
+        to bottom,
+        var(--color-bark) 0%,
+        var(--color-bark-fade) 46%,
+        var(--color-ground-alt) 82%,
+        var(--color-ground) 100%
+    );
 }
 
 /* The descent into the footer.

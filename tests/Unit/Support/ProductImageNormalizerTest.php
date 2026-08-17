@@ -25,7 +25,13 @@ function fixturePhoto(int $canvasW, int $canvasH, int $productW, int $productH):
     return $path;
 }
 
-/** Share of the output frame that is not background. */
+/**
+ * Share of the output frame that is not background.
+ *
+ * The cutoff is well below the sweep colour rather than just below white: the
+ * normalizer tints its background to --color-ground, so "anything not white" now
+ * describes the whole frame.
+ */
 function coverage(string $path): float
 {
     $image = imagecreatefromjpeg($path);
@@ -35,9 +41,7 @@ function coverage(string $path): float
 
     for ($y = 0; $y < $h; $y++) {
         for ($x = 0; $x < $w; $x++) {
-            $rgb = imagecolorat($image, $x, $y);
-
-            if ((($rgb >> 16) & 0xFF) < 244) {
+            if (((imagecolorat($image, $x, $y) >> 16) & 0xFF) < 200) {
                 $product++;
             }
         }
@@ -100,4 +104,30 @@ it('keeps the whole image when there is no product to find', function () {
     // either.
     expect(app(ProductImageNormalizer::class)->normalize($blank, $target))->toBeTrue();
     expect(array_slice(getimagesize($target), 0, 2))->toBe([1200, 1500]);
+});
+
+it('tints sweeps to the same colour the page ground uses', function () {
+    // The normalizer bakes the ground colour into the JPEGs at seed time, so it
+    // cannot read the CSS variable and has to hold its own copy. This is the
+    // only thing stopping the two drifting apart, which would show up as every
+    // product photograph sitting on a slightly wrong shade of the page.
+    preg_match('/--color-ground:\s*#([0-9a-fA-F]{6});/', file_get_contents(resource_path('css/app.css')), $m);
+
+    $sweep = (new ReflectionClass(ProductImageNormalizer::class))->getConstant('SWEEP');
+
+    expect(sprintf('%02x%02x%02x', ...$sweep))->toBe(strtolower($m[1]),
+        'ProductImageNormalizer::SWEEP no longer matches --color-ground. Update it and re-run WalletImagesSeeder.');
+});
+
+it('puts the page ground, not white, behind the product', function () {
+    $target = tempnam(sys_get_temp_dir(), 'out').'.jpg';
+    app(ProductImageNormalizer::class)->normalize(fixturePhoto(900, 900, 300, 300), $target);
+
+    $image = imagecreatefromjpeg($target);
+    $corner = imagecolorat($image, 8, 8);
+
+    // Within a JPEG's rounding of the real thing.
+    foreach ([[16, 0xf0], [8, 0xe9], [0, 0xdd]] as [$shift, $expected]) {
+        expect(abs((($corner >> $shift) & 0xFF) - $expected))->toBeLessThanOrEqual(3);
+    }
 });

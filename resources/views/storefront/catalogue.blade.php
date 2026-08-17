@@ -65,9 +65,22 @@
         </div>
     </section>
 
+    {{-- Carries the hero's bark back up to the ground. Only present when there
+         is a photograph to leave; the placeholder frame is already the ground
+         colour, so it has nothing to transition from. --}}
+    @if ($heroPoster !== null)
+        <div class="hero-descent" aria-hidden="true"></div>
+    @endif
+
     {{-- Collection — the former bare catalogue grid, now a section of the
-         homepage. --}}
-    <section id="shop" class="px-4 pt-[110px] sm:px-11">
+         homepage. The descent band above supplies most of the breathing room
+         when it is present, so the section's own top padding gives way to it
+         rather than stacking on top of it. --}}
+    <section id="shop" @class([
+        'px-4 sm:px-11',
+        'pt-[52px]' => $heroPoster !== null,
+        'pt-[110px]' => $heroPoster === null,
+    ])>
         <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <h2 class="font-display text-[13px] uppercase tracking-[0.28em] text-ink">
                 {{ __('shop.collection.title') }}
