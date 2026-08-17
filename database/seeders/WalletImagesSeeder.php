@@ -28,6 +28,12 @@ class WalletImagesSeeder extends Seeder
         return preg_match('/^[a-z][0-9]+$/', strtolower($basename)) === 1;
     }
 
+    /**
+     * The source photographs are gitignored — 60MB of originals that git would
+     * carry forever. Restore the folder from wherever it is backed up before
+     * running this; with no folder present it returns without touching
+     * anything, so a fresh clone seeds the rest of the database fine.
+     */
     public function run(): void
     {
         $source = base_path('walletImages');

@@ -22,11 +22,11 @@
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($images as $image)
                             <a href="{{ $image['url'] }}" target="_blank" class="group block">
-                                <div class="aspect-[4/5] overflow-hidden bg-paper">
+                                <div class="aspect-square overflow-hidden bg-white">
                                     <img
                                         src="{{ $image['url'] }}"
                                         alt="{{ strtoupper($image['name']) }}"
-                                        class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                                        class="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
                                         loading="lazy"
                                     >
                                 </div>

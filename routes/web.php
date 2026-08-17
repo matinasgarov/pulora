@@ -14,9 +14,11 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/'.config('app.locale'));
+Route::redirect('/wallet-images', '/'.config('app.locale').'/wallet-images');
 
 // {locale} is a single-segment wildcard, so /{locale} has the same shape as
 // GET /admin — Filament's Workshop page. Today /admin wins only because panel
@@ -32,6 +34,47 @@ Route::prefix('{locale}')
     ->name('storefront.')
     ->group(function () {
         Route::get('/', CatalogueController::class)->name('catalogue');
+        // Internal contact sheet for the supplier photography. Not registered
+        // in production: it is a working tool rather than a page, and it lists
+        // every source image to anyone who guesses the URL.
+        if (! app()->environment('production')) {
+            // The folder lives at the repo root. public_path() pointed at a
+            // directory that does not exist, so File::files() threw and this
+            // route 500'd; and because the folder is gitignored, absent has to
+            // read as "nothing here" rather than as an error.
+            Route::get('/wallet-images', function () {
+                abort_unless(File::isDirectory(base_path('walletImages')), 404);
+
+                $images = collect(File::files(base_path('walletImages')))
+                    ->filter(fn (SplFileInfo $file) => in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'jfif'], true))
+                    ->sortBy(fn (SplFileInfo $file) => strtolower($file->getFilename()))
+                    ->groupBy(fn (SplFileInfo $file) => strtolower(substr($file->getBasename('.'.$file->getExtension()), 0, 1)))
+                    ->map(fn ($files) => $files->map(fn (SplFileInfo $file) => [
+                        'name' => $file->getBasename('.'.$file->getExtension()),
+                        'url' => route('storefront.wallet-image', ['file' => $file->getFilename()]),
+                    ]));
+
+                return view('wallet-images', ['groups' => $images]);
+            })->name('wallet-images');
+
+            // Serves one source photograph. The folder is outside public/, so
+            // these cannot be linked directly. basename() plus the constraint
+            // on {file} keep the parameter from walking out of the directory —
+            // a filename arriving from the URL and being read off disk is the
+            // exact shape of a traversal bug.
+            //
+            // $locale is declared even though it is unused: route parameters
+            // are handed to a closure in the order the URI declares them, so a
+            // lone $file argument silently receives the locale instead.
+            Route::get('/wallet-images/{file}', function (string $locale, string $file) {
+                $path = base_path('walletImages').DIRECTORY_SEPARATOR.basename($file);
+
+                abort_unless(File::isFile($path), 404);
+
+                return response()->file($path);
+            })->where('file', '[A-Za-z0-9 ,._()-]+')->name('wallet-image');
+        }
+
         Route::get('/product/{slug}', ProductController::class)->name('product');
         Route::get('/cart', CartPage::class)->name('cart');
         Route::get('/checkout', CheckoutForm::class)->name('checkout');
@@ -49,7 +92,14 @@ if (app()->environment(['local', 'testing'])) {
     })->name('payment.mock.form');
 }
 
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+// Throttled like every other sensitive POST here. Without it the discount_code
+// field is an unmetered oracle: submissions are unlimited and the rejection
+// messages distinguish "not valid" from "expired" from "fully used", which is
+// enough to brute-force a working code. 20/min leaves ordinary checkout —
+// including a few validation retries — untouched.
+Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->middleware('throttle:20,1')
+    ->name('checkout.store');
 Route::post('/payment/callback', PaymentCallbackController::class)
     ->middleware('throttle:60,1')
     ->name('payment.callback');
