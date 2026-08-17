@@ -6,34 +6,30 @@
     </nav>
 
     <div class="grid grid-cols-1 gap-10 px-4 sm:px-11 lg:grid-cols-[1.35fr_1fr] lg:items-start lg:gap-16">
-        {{-- Gallery — 2-col grid at lg, 10px gap, hero (1) and in-hand (4)
-             spanning both columns. Below lg it becomes a horizontal
-             scroller with snap points rather than a squeezed 2-col grid.
-             Missing images fall back to the placeholder frame at the right
-             ratio, from product_images in sort_order. --}}
+        {{-- Gallery. With photography it is a one-frame-at-a-time viewer with
+             arrows, thumbnails and zoom. Without it, the shot list itself is
+             the content: the 2-col placeholder grid names the four photographs
+             still owed, so the gap stays visible rather than hidden behind a
+             blank box. --}}
         @php
             $images = $product->images;
             $gallerySlots = [
                 [
-                    'image' => $images->get(0),
                     'caption' => __('shop.placeholder.gallery.hero', ['name' => $product->name]),
                     'ratio' => 'aspect-square',
                     'span' => 'lg:col-span-2',
                 ],
                 [
-                    'image' => $images->get(1),
                     'caption' => __('shop.placeholder.gallery.edge_paint', ['name' => $product->name]),
                     'ratio' => 'aspect-square',
                     'span' => '',
                 ],
                 [
-                    'image' => $images->get(2),
                     'caption' => __('shop.placeholder.gallery.interior', ['name' => $product->name]),
                     'ratio' => 'aspect-square',
                     'span' => '',
                 ],
                 [
-                    'image' => $images->get(3),
                     'caption' => __('shop.placeholder.gallery.in_hand', ['name' => $product->name]),
                     'ratio' => 'aspect-[3/2]',
                     'span' => 'lg:col-span-2',
@@ -41,19 +37,17 @@
             ];
         @endphp
 
-        <div class="-mx-4 flex snap-x snap-mandatory gap-[10px] overflow-x-auto px-4 pb-1 sm:-mx-11 sm:px-11 lg:mx-0 lg:grid lg:grid-cols-2 lg:gap-[10px] lg:overflow-visible lg:px-0 lg:pb-0">
-            @foreach ($gallerySlots as $slot)
-                <div class="w-[82%] shrink-0 snap-start overflow-hidden bg-ground-alt {{ $slot['ratio'] }} {{ $slot['span'] }} lg:w-auto">
-                    @if ($slot['image'])
-                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($slot['image']->path) }}"
-                             alt="{{ $slot['image']->alt_text }}"
-                             class="h-full w-full object-cover">
-                    @else
+        @if ($images->isNotEmpty())
+            <x-product-gallery :images="$images" :name="$product->slug" />
+        @else
+            <div class="-mx-4 flex snap-x snap-mandatory gap-[10px] overflow-x-auto px-4 pb-1 sm:-mx-11 sm:px-11 lg:mx-0 lg:grid lg:grid-cols-2 lg:gap-[10px] lg:overflow-visible lg:px-0 lg:pb-0">
+                @foreach ($gallerySlots as $slot)
+                    <div class="w-[82%] shrink-0 snap-start overflow-hidden bg-ground-alt {{ $slot['ratio'] }} {{ $slot['span'] }} lg:w-auto">
                         <x-placeholder-frame :caption="$slot['caption']" inset-class="top-3 right-3" class="h-full w-full" />
-                    @endif
-                </div>
-            @endforeach
-        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
 
         {{-- Buy column. --}}
         <div class="lg:sticky lg:top-[130px]">

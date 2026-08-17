@@ -60,6 +60,12 @@ return [
             '14-day unused returns',
         ],
         'related' => 'You might also like these',
+        'gallery' => [
+            'label' => 'Product photographs',
+            'previous' => 'Previous photograph',
+            'next' => 'Next photograph',
+            'go_to' => 'Go to photograph :number',
+        ],
     ],
     'cart' => [
         'title' => 'Your bag',

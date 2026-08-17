@@ -60,6 +60,12 @@ return [
             '14 gün ərzində istifadəsiz geri qaytarma',
         ],
         'related' => 'Bunlar da uyğun gələ bilər',
+        'gallery' => [
+            'label' => 'Məhsul şəkilləri',
+            'previous' => 'Əvvəlki şəkil',
+            'next' => 'Növbəti şəkil',
+            'go_to' => ':number nömrəli şəklə keç',
+        ],
     ],
     'cart' => [
         'title' => 'Səbətiniz',

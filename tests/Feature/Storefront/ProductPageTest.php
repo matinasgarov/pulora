@@ -56,10 +56,41 @@ it('fills the gallery from real product images in sort order', function () {
     $response->assertSee('alt="The hero shot"', false)
         ->assertSee('alt="The edge paint macro"', false);
 
-    // Only 2 of 4 slots have real images — the other two fall back to the
-    // placeholder frame, so the layout never collapses.
-    $response->assertSee(__('shop.placeholder.gallery.interior', ['name' => $product->name], 'en'))
-        ->assertSee(__('shop.placeholder.gallery.in_hand', ['name' => $product->name], 'en'));
+    // Photography and the placeholder shot list are alternatives, not a mix.
+    // Padding a real gallery out to four frames would put "photography pending"
+    // panels between a product's actual photographs.
+    $response->assertDontSee(__('shop.placeholder.gallery.interior', ['name' => $product->name], 'en'));
+});
+
+it('navigates the gallery without javascript', function () {
+    $product = Product::factory()->create(['slug' => 'bifold-wallet', 'is_active' => true]);
+    Variant::factory()->for($product)->create(['is_active' => true, 'stock_quantity' => 3]);
+
+    ProductImage::create(['product_id' => $product->id, 'path' => 'a.jpg', 'alt_text' => 'One', 'sort_order' => 0]);
+    ProductImage::create(['product_id' => $product->id, 'path' => 'b.jpg', 'alt_text' => 'Two', 'sort_order' => 1]);
+
+    $response = $this->get('/en/product/bifold-wallet');
+
+    // Thumbnails are anchors to the frames, so they still work with scripting
+    // off; the script only upgrades them to a smooth scroll without a hash.
+    $response->assertSee('id="gallery-bifold-wallet-1"', false)
+        ->assertSee('href="#gallery-bifold-wallet-1"', false);
+
+    // The arrows are the part that cannot work without a script, so they ship
+    // hidden and the script unhides them. Nothing inert is ever on screen.
+    expect(substr_count($response->getContent(), 'data-gallery-prev hidden'))->toBe(1);
+});
+
+it('shows no gallery controls for a product with a single photograph', function () {
+    $product = Product::factory()->create(['slug' => 'bifold-wallet', 'is_active' => true]);
+    Variant::factory()->for($product)->create(['is_active' => true, 'stock_quantity' => 3]);
+
+    ProductImage::create(['product_id' => $product->id, 'path' => 'a.jpg', 'alt_text' => 'Only', 'sort_order' => 0]);
+
+    $this->get('/en/product/bifold-wallet')
+        ->assertSee('alt="Only"', false)
+        ->assertDontSee('data-gallery-prev', false)
+        ->assertDontSee('data-gallery-thumb', false);
 });
 
 it('renders all four gallery slots as placeholders when there are no images at all', function () {
