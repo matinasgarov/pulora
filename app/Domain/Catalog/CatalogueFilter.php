@@ -3,8 +3,8 @@
 namespace App\Domain\Catalog;
 
 use App\Domain\Catalog\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 /**
  * The catalogue's search, filter and sort state, read from the query string.
@@ -14,15 +14,20 @@ use Illuminate\Support\Collection;
  * and so the whole thing works with scripting off. The header's search field
  * and the filter panel are both plain GET forms pointing here.
  *
- * Filtering happens in memory over the already-loaded catalogue rather than in
- * SQL. Two reasons: the controller loads every active product anyway (the grid
- * shows them all), so this adds no queries; and `name` and `leather` are
- * translatable JSON columns whose accessors resolve a locale and fall back —
- * matching that in SQL means either JSON path queries that miss rows stored as
- * plain strings, or a LIKE across raw JSON that matches the locale keys
- * themselves. Reading the resolved values is simply correct. If this catalogue
- * ever grows past a few hundred pieces, that trade flips and this belongs in
- * the query.
+ * Filtering, sorting and paging all happen in the database. They used to run in
+ * PHP over the whole active catalogue, which was fine while the shop held
+ * fifteen pieces and stopped being fine the moment it did not: every request
+ * loaded every product, with its images, variants and personalization options,
+ * to show twelve of them.
+ *
+ * What made that hard to move into SQL was search. `name`, `leather` and
+ * `description` are translatable JSON whose accessors resolve a locale and fall
+ * back, and the search folds Azerbaijani diacritics so "cuzdan" finds "cüzdan".
+ * A LIKE over the raw JSON matches the locale keys themselves and folds
+ * nothing. The answer is to fold once on write instead of every time on read:
+ * Product::syncSearchText() maintains a `search_text` column holding exactly
+ * the string a reader of each locale would see, already folded, so searching is
+ * an ordinary LIKE on one key of it.
  */
 final readonly class CatalogueFilter
 {
@@ -77,55 +82,59 @@ final readonly class CatalogueFilter
     }
 
     /**
-     * @param  Collection<int, Product>  $products
-     * @return Collection<int, Product>
+     * Narrows and orders the catalogue query.
+     *
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
      */
-    public function apply(Collection $products): Collection
+    public function apply(Builder $query): Builder
     {
-        return $this->sortProducts(
-            $products
-                ->when($this->category !== null, fn ($c) => $c->filter(
-                    fn (Product $p) => $p->category?->value === $this->category
-                ))
-                ->when($this->price !== null, fn ($c) => $c->filter(
-                    fn (Product $p) => $this->inPriceBand($p->base_price_minor)
-                ))
-                ->when($this->q !== null, fn ($c) => $c->filter(
-                    fn (Product $p) => $this->matches($p)
-                ))
-        )->values();
+        return $this->sortQuery(
+            $query
+                ->when($this->category !== null, fn (Builder $q) => $q->where('category', $this->category))
+                ->when($this->price !== null, function (Builder $q) {
+                    [$min, $max] = self::PRICE_BANDS[$this->price];
+
+                    $q->where('base_price_minor', '>=', $min)
+                        ->when($max !== null, fn (Builder $q) => $q->where('base_price_minor', '<', $max));
+                })
+                ->when($this->q !== null, fn (Builder $q) => $this->search($q))
+        );
     }
 
-    private function inPriceBand(int $priceMinor): bool
-    {
-        [$min, $max] = self::PRICE_BANDS[$this->price];
-
-        return $priceMinor >= $min && ($max === null || $priceMinor < $max);
-    }
-
-    private function matches(Product $product): bool
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
+    private function search(Builder $query): Builder
     {
         $needle = self::fold($this->q);
 
         if ($needle === '') {
-            return true;
+            return $query;
         }
 
-        $haystack = self::fold(implode(' ', array_filter([
-            $product->name,
-            $product->leather,
-            $product->description,
-        ])));
+        // The column is stored per locale and already folded, so the needle
+        // only has to be folded to match it.
+        $column = 'search_text->'.app()->getLocale();
 
         // Every word must appear, so "black card" narrows rather than widening
         // to everything black plus everything with a card slot.
         foreach (preg_split('/\s+/', $needle) as $word) {
-            if ($word !== '' && ! str_contains($haystack, $word)) {
-                return false;
+            if ($word === '') {
+                continue;
             }
+
+            $query->where($column, 'like', '%'.self::escapeLike($word).'%');
         }
 
-        return true;
+        return $query;
+    }
+
+    /** So a customer searching for "50%" does not match everything. */
+    private static function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $value);
     }
 
     /**
@@ -144,18 +153,21 @@ final readonly class CatalogueFilter
     }
 
     /**
-     * @param  Collection<int, Product>  $products
-     * @return Collection<int, Product>
+     * Every order ends with `id` so that ties resolve the same way twice.
+     * Without it two products at the same price can swap places between page 1
+     * and page 2 and one of them is never shown at all.
+     *
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
      */
-    private function sortProducts(Collection $products): Collection
+    private function sortQuery(Builder $query): Builder
     {
         return match ($this->sort) {
-            'price_asc' => $products->sortBy->base_price_minor,
-            'price_desc' => $products->sortByDesc->base_price_minor,
-            'newest' => $products->sortByDesc->created_at,
-            // "Featured" is the operator's own order, which is the order the
-            // controller already fetched them in.
-            default => $products,
+            'price_asc' => $query->orderBy('base_price_minor')->orderBy('id'),
+            'price_desc' => $query->orderByDesc('base_price_minor')->orderBy('id'),
+            'newest' => $query->orderByDesc('created_at')->orderByDesc('id'),
+            // "Featured" is the operator's own order, which is insertion order.
+            default => $query->orderBy('id'),
         };
     }
 }

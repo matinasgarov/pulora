@@ -2,8 +2,10 @@
 
 namespace App\Domain\Catalog\Models;
 
+use App\Domain\Catalog\CatalogueFilter;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductTag;
+use App\Http\Middleware\SetLocale;
 use App\Support\HasTranslations;
 use App\Support\TranslatableListCast;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,7 +33,48 @@ class Product extends Model
         'category' => ProductCategory::class,
         'tag' => ProductTag::class,
         'specs' => TranslatableListCast::class,
+        'search_text' => 'array',
     ];
+
+    protected static function booted(): void
+    {
+        // Kept current on every write rather than rebuilt on read, because the
+        // catalogue searches it on every request and products change rarely.
+        static::saving(fn (Product $product) => $product->syncSearchText());
+    }
+
+    /**
+     * Rebuilds the folded, per-locale text the catalogue searches.
+     *
+     * Each locale gets the same string a reader of that locale would see —
+     * resolved through the trait's own fallback, so a piece with only English
+     * copy is still findable while reading Azerbaijani, exactly as it was when
+     * the search ran over resolved values in PHP. Folding happens here so the
+     * query can be a plain LIKE. See the migration for why this column exists.
+     */
+    public function syncSearchText(): static
+    {
+        $original = app()->getLocale();
+        $folded = [];
+
+        foreach (SetLocale::SUPPORTED as $locale) {
+            // Reading through the accessor rather than reimplementing the
+            // fallback is what keeps this identical to what a reader gets.
+            app()->setLocale($locale);
+
+            $folded[$locale] = CatalogueFilter::fold(implode(' ', array_filter([
+                $this->name,
+                $this->leather,
+                $this->description,
+            ])));
+        }
+
+        app()->setLocale($original);
+
+        $this->attributes['search_text'] = json_encode($folded, JSON_UNESCAPED_UNICODE);
+
+        return $this;
+    }
 
     public function variants() { return $this->hasMany(Variant::class); }
     public function images() { return $this->hasMany(ProductImage::class)->orderBy('sort_order'); }
