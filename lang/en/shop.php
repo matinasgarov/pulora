@@ -122,6 +122,7 @@ return [
             'all' => 'All',
             'wallet' => 'Wallets',
             'card' => 'Card cases',
+            'bag' => 'Bags',
         ],
         'filters' => 'Filters',
         'count' => ':count pieces',

@@ -122,6 +122,7 @@ return [
             'all' => 'Hamısı',
             'wallet' => 'Cüzdan',
             'card' => 'Kart qabı',
+            'bag' => 'Çantalar',
         ],
         'filters' => 'Filtrlər',
         'count' => ':count parça',

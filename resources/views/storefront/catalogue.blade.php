@@ -97,7 +97,7 @@
                  Each carries the rest of the state along, so choosing a
                  category does not silently discard a search. --}}
             <div class="flex items-center gap-6 font-sans text-[11px] uppercase tracking-[0.16em]">
-                @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card'] as $value => $key)
+                @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card', 'bag' => 'bag'] as $value => $key)
                     @php($isCurrent = ($filter->category ?? '') === $value)
                     <a href="{{ route('storefront.catalogue', $filter->toQuery(['category' => $value]), absolute: false) }}#shop"
                        @if ($isCurrent) aria-current="page" @endif
@@ -169,7 +169,7 @@
                             {{ __('shop.collection.filter_category') }}
                         </legend>
                         <div class="mt-3 space-y-2">
-                            @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card'] as $value => $key)
+                            @foreach (['' => 'all', 'wallet' => 'wallet', 'card' => 'card', 'bag' => 'bag'] as $value => $key)
                                 <label class="flex items-center gap-3 font-sans text-[13px] text-ink">
                                     <input type="radio" name="category" value="{{ $value }}"
                                            @checked(($filter->category ?? '') === $value)>

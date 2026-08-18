@@ -11,12 +11,14 @@ enum ProductCategory: string
 {
     case Wallet = 'wallet';
     case Card = 'card';
+    case Bag = 'bag';
 
     public function label(): string
     {
         return match ($this) {
             self::Wallet => 'Cüzdan',
             self::Card => 'Kart qabı',
+            self::Bag => 'Çanta',
         };
     }
 }
