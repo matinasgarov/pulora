@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductImage;
 use App\Domain\Catalog\Models\Variant;
+use App\Domain\Catalog\ProductCategory;
 use App\Support\ProductImageNormalizer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -12,6 +13,16 @@ use Illuminate\Support\Str;
 
 class WalletImagesSeeder extends Seeder
 {
+    /**
+     * Overridable so a test can seed from a fixture folder holding one
+     * photograph. Against the real folder every run normalises 67 images, which
+     * made a three-assertion test take two minutes.
+     */
+    public function __construct(
+        private readonly ?string $source = null,
+        private readonly ?string $target = null,
+    ) {}
+
     /**
      * A product photograph is a prefix then a number: a1, k3, d_2.
      *
@@ -39,6 +50,15 @@ class WalletImagesSeeder extends Seeder
     }
 
     /**
+     * Whether this run should push the catalogue file back over products that
+     * already exist, discarding anything edited in the admin panel since.
+     */
+    private function overwrites(): bool
+    {
+        return filter_var(env('PULORA_RESEED_OVERWRITE', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
      * The source photographs are gitignored — 60MB of originals that git would
      * carry forever. Restore the folder from wherever it is backed up before
      * running this; with no folder present it returns without touching
@@ -46,8 +66,8 @@ class WalletImagesSeeder extends Seeder
      */
     public function run(): void
     {
-        $source = base_path('walletImages');
-        $target = storage_path('app/public/card-holders');
+        $source = $this->source ?? base_path('walletImages');
+        $target = $this->target ?? storage_path('app/public/card-holders');
 
         if (! File::isDirectory($source)) {
             return;
@@ -69,7 +89,7 @@ class WalletImagesSeeder extends Seeder
         // Driven by the catalogue's order, not the folder's, so that the same
         // piece in three colours lands in three adjacent tiles. Products are
         // created in this order and the grid's default sort is insertion order.
-        foreach ($catalogue as $prefix => [$nameEn, $nameAz, $category, $priceMinor, $leatherEn, $leatherAz]) {
+        foreach ($catalogue as $prefix => $definition) {
             $files = $groups->get($prefix);
 
             // A named product with no photographs yet is not an error — it just
@@ -78,48 +98,54 @@ class WalletImagesSeeder extends Seeder
                 continue;
             }
 
-            $slug = Str::slug($nameEn);
+            $slug = Str::slug($definition['name']['en']);
             $slugs[] = $slug;
 
-            $product = Product::updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'name' => ['en' => $nameEn, 'az' => $nameAz],
-                    'description' => [
-                        'en' => 'Handmade in Baku, cut and stitched to order.',
-                        'az' => 'Bakıda əl işi, sifarişlə kəsilir və tikilir.',
-                    ],
+            $product = Product::firstOrNew(['slug' => $slug]);
+
+            // Create-only for everything the operator can edit in Filament.
+            // The panel and this list are both sources of truth for a name or a
+            // price, and updateOrCreate meant the panel quietly lost: an edit
+            // made at /admin came back the next time anyone seeded. A new
+            // product gets its copy from here; an existing one keeps whatever
+            // it has been given since. Set PULORA_RESEED_OVERWRITE=true to push
+            // this file's version back over the top on purpose.
+            if (! $product->exists || $this->overwrites()) {
+                $product->fill([
+                    'name' => $definition['name'],
+                    'description' => $definition['description'],
                     'story' => [
                         'en' => 'Cut, stitched and edge-painted by hand at the bench.',
                         'az' => 'Dəzgahda əllə kəsilir, tikilir və kənarları boyanır.',
                     ],
-                    'leather' => ['en' => $leatherEn, 'az' => $leatherAz],
-                    'category' => $category->value,
-                    'tag' => null,
+                    'leather' => $definition['leather'],
+                    'category' => $definition['category']->value,
+                    'base_price_minor' => $definition['price'],
+                    'lead_time_days' => 5,
+                    'is_active' => true,
                     'specs' => [
                         'en' => [['label' => 'Made to order', 'value' => '5 business days']],
                         'az' => [['label' => 'Hazırlanma', 'value' => '5 iş günü']],
                     ],
-                    'base_price_minor' => $priceMinor,
-                    'lead_time_days' => 5,
-                    'is_active' => true,
-                ],
-            );
+                ])->save();
+            }
 
-            Variant::updateOrCreate(
+            // Stock is a live number the operator manages, so it is only ever
+            // set when the variant is first created.
+            Variant::firstOrCreate(
                 ['sku' => 'PUL-'.strtoupper(str_replace('_', 'X', $prefix))],
                 [
                     'product_id' => $product->id,
                     'description' => 'Default',
                     'stock_quantity' => 10,
-                    'weight_grams' => $category === \App\Domain\Catalog\ProductCategory::Bag ? 480 : 120,
+                    'weight_grams' => $definition['category'] === ProductCategory::Bag ? 480 : 120,
                     'is_active' => true,
                 ],
             );
 
-            ProductImage::where('product_id', $product->id)->delete();
+            $paths = [];
 
-            $files->values()->each(function ($file, int $index) use ($product, $target, &$written) {
+            $files->values()->each(function ($file, int $index) use ($product, $definition, $target, &$written, &$paths) {
                 // Always .jpg: the normalizer re-encodes, so the source
                 // extension (.jfif, .png) says nothing about the output.
                 $filename = strtolower($file->getBasename('.'.$file->getExtension())).'.jpg';
@@ -133,17 +159,26 @@ class WalletImagesSeeder extends Seeder
                 }
 
                 $written[] = $filename;
+                $path = 'card-holders/'.$filename;
+                $paths[] = $path;
 
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'path' => 'card-holders/'.$filename,
-                    'alt_text' => [
-                        'en' => $product->name.' angle '.($index + 1),
-                        'az' => $product->name.' görünüş '.($index + 1),
+                // The JPEG behind an existing row is rewritten every run, but
+                // the row itself is kept — alt text is editable and deleting
+                // the row to recreate it threw that away each time.
+                ProductImage::firstOrCreate(
+                    ['product_id' => $product->id, 'path' => $path],
+                    [
+                        'alt_text' => [
+                            'en' => $definition['name']['en'].' angle '.($index + 1),
+                            'az' => $definition['name']['az'].' görünüş '.($index + 1),
+                        ],
+                        'sort_order' => $index,
                     ],
-                    'sort_order' => $index,
-                ]);
+                );
             });
+
+            // Only rows whose photograph no longer exists.
+            ProductImage::where('product_id', $product->id)->whereNotIn('path', $paths)->delete();
         }
 
         // Products from an earlier naming scheme. Orders keep their own

@@ -152,6 +152,9 @@ it('shows the unavailable message and hides the add-to-bag button when capacity 
 });
 
 it('shows three related products, excluding the current one', function () {
+    // Which three is a ranking decision — same family first, then same
+    // category — and lives in RelatedProductsTest. What this pins is the
+    // count and the exclusion, which hold whatever the ranking does.
     $product = Product::factory()->create(['slug' => 'bifold-wallet', 'name' => 'Bifold wallet', 'is_active' => true]);
     Variant::factory()->for($product)->create(['is_active' => true, 'stock_quantity' => 3]);
 
@@ -164,9 +167,9 @@ it('shows three related products, excluding the current one', function () {
 
     $response->assertSee(__('shop.product.related', [], 'az'));
 
-    foreach ($others->take(3) as $expected) {
-        $response->assertSee($expected->name);
-    }
+    $related = $response->viewData('related');
 
-    $response->assertDontSee($others->last()->name);
+    expect($related)->toHaveCount(3)
+        ->and($related->pluck('id'))->not->toContain($product->id)
+        ->and($related->pluck('id')->intersect($others->pluck('id')))->toHaveCount(3);
 });
