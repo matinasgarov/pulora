@@ -44,8 +44,17 @@ class ProductImageNormalizer
      *  per image and looking for a real step down from it is what separates a
      *  brown wallet from the grey it is sitting on. Wide enough that soft
      *  shadows still survive — they are what keeps a product from looking cut
-     *  out and pasted down. */
-    private const PRODUCT_CONTRAST = 24;
+     *  out and pasted down.
+     *
+     *  60, not 24. At 24 the cutoff lands around luma 231, which is inside the
+     *  soft drop shadow several of these photographs carry — so the shadow was
+     *  measured as part of the product. The brown card case x1 came out with a
+     *  668x948 box against 662x754 for the identical piece in black, and since
+     *  the product is then scaled to fill a fixed share of the frame by AREA, a
+     *  box a quarter too tall renders the product visibly smaller and, because
+     *  the box is centred, sitting high in its tile. Beside its own colourways
+     *  that read plainly as broken. */
+    private const PRODUCT_CONTRAST = 60;
 
     /** However dark the sweep reads, anything above this is still background. */
     private const BACKGROUND_FLOOR = 200;

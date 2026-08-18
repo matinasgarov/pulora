@@ -131,3 +131,70 @@ it('puts the page ground, not white, behind the product', function () {
         expect(abs((($corner >> $shift) & 0xFF) - $expected))->toBeLessThanOrEqual(3);
     }
 });
+
+/**
+ * The same product, once with a soft drop shadow beneath it and once without.
+ * The shadow is a light grey band — the kind these supplier photographs
+ * actually carry, not a hard black one.
+ */
+function photoWithShadow(bool $shadow): string
+{
+    $image = imagecreatetruecolor(900, 1200);
+    imagefill($image, 0, 0, imagecolorallocate($image, 255, 255, 255));
+
+    if ($shadow) {
+        // Luma 220: darker than the sweep, far lighter than any leather. This
+        // value is the point of the fixture — it sits between the cutoff the
+        // old threshold produced (231) and the one the current threshold
+        // produces (200), so it is caught as product by the first and ignored
+        // by the second. A shadow outside that band would pass either way and
+        // the test would prove nothing.
+        imagefilledrectangle($image, 260, 810, 640, 980, imagecolorallocate($image, 220, 220, 220));
+    }
+
+    imagefilledrectangle($image, 300, 400, 600, 800, imagecolorallocate($image, 40, 30, 25));
+
+    $path = tempnam(sys_get_temp_dir(), 'shadow').'.jpg';
+    imagejpeg($image, $path, 95);
+
+    return $path;
+}
+
+it('sizes a product by the product, not by the shadow under it', function () {
+    // The brown card case x1 shipped at 27.7% of its tile and sitting high,
+    // beside the identical piece in black at 34.9% and centred, because its
+    // drop shadow was measured as part of the product: a box a quarter too
+    // tall, then scaled down to hit a fixed share of the frame by area.
+    $bare = tempnam(sys_get_temp_dir(), 'out').'.jpg';
+    $shadowed = tempnam(sys_get_temp_dir(), 'out').'.jpg';
+
+    app(ProductImageNormalizer::class)->normalize(photoWithShadow(false), $bare);
+    app(ProductImageNormalizer::class)->normalize(photoWithShadow(true), $shadowed);
+
+    expect(coverage($shadowed))->toEqualWithDelta(coverage($bare), 0.03);
+});
+
+it('leaves a shadowed product centred in its frame', function () {
+    // Centring a box that includes the shadow lifts the product itself above
+    // the middle, which is what made one tile in a row of three sit high.
+    $target = tempnam(sys_get_temp_dir(), 'out').'.jpg';
+    app(ProductImageNormalizer::class)->normalize(photoWithShadow(true), $target);
+
+    $image = imagecreatefromjpeg($target);
+    $w = imagesx($image);
+    $h = imagesy($image);
+    $top = $h;
+    $bottom = -1;
+
+    for ($y = 0; $y < $h; $y += 2) {
+        for ($x = 0; $x < $w; $x += 2) {
+            if ((imagecolorat($image, $x, $y) >> 16 & 0xFF) < 120) {
+                $top = min($top, $y);
+                $bottom = max($bottom, $y);
+                break;
+            }
+        }
+    }
+
+    expect((($top + $bottom) / 2) / $h)->toEqualWithDelta(0.5, 0.04);
+});
