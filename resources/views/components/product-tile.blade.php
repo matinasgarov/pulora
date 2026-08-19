@@ -36,7 +36,7 @@
         {{-- Wishlist heart is Phase 2 and deliberately omitted — a dead
              heart is worse than shipping none. --}}
 
-        @if ($canQuickAdd)
+        @if ($canQuickAdd && config('shop.ordering'))
             <livewire:quick-add :product="$product" :key="'quick-add-'.$product->id" />
         @endif
     </div>

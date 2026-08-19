@@ -21,6 +21,13 @@ class WalletImagesSeeder extends Seeder
     public function __construct(
         private readonly ?string $source = null,
         private readonly ?string $target = null,
+        /**
+         * False when the source folder already holds finished images — the
+         * committed demo fixtures. Re-normalising an already-normalised
+         * photograph would crop it a second time and shrink the product, so
+         * this is not merely an optimisation.
+         */
+        private readonly bool $normalize = true,
     ) {}
 
     /**
@@ -154,7 +161,7 @@ class WalletImagesSeeder extends Seeder
                 // Straight copy would put mismatched aspect ratios and white
                 // sweeps onto the page unmodified — see ProductImageNormalizer
                 // for area-based sizing and why the sweep is tinted.
-                if (! app(ProductImageNormalizer::class)->normalize($file->getPathname(), $destination)) {
+                if (! $this->normalize || ! app(ProductImageNormalizer::class)->normalize($file->getPathname(), $destination)) {
                     File::copy($file->getPathname(), $destination);
                 }
 

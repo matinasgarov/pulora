@@ -53,7 +53,15 @@
         <div class="lg:sticky lg:top-[130px]">
             <h1 class="font-display text-[38px] leading-[1.15] text-ink">{{ $product->name }}</h1>
 
-            <livewire:product-purchase :product="$product" />
+            {{-- Ordering is off for the public preview; the piece is still
+                 fully described, it just cannot be bought yet. --}}
+            @if (config('shop.ordering'))
+                <livewire:product-purchase :product="$product" />
+            @else
+                <p class="mt-8 border-y border-rule py-5 font-sans text-[13px] leading-relaxed text-ink-soft">
+                    {{ __('shop.preview.ordering_soon') }}
+                </p>
+            @endif
 
             {{-- Not part of the design spec's buy-column list, but existing
                  content (Product::$story) that must keep rendering. --}}

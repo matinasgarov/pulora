@@ -93,6 +93,9 @@ return [
         'total' => 'Cəmi',
         'no_shipping' => 'Təəssüf ki, hələ o ölkəyə göndərmirik.',
     ],
+    'preview' => [
+        'ordering_soon' => 'Sifariş qəbulu tezliklə açılır. O vaxta qədər bizə yazın, sizin üçün ayıraq.',
+    ],
     'catalogue' => [
         'title' => 'Mağaza',
         'empty' => 'Hələlik burada heç nə yoxdur.',

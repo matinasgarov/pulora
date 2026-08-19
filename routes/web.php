@@ -7,6 +7,7 @@ use App\Http\Controllers\OrderLookupController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\Storefront\CatalogueController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Middleware\EnsureOrderingEnabled;
 use App\Http\Middleware\SetLocale;
 use App\Livewire\CartPage;
 use App\Livewire\CheckoutForm;
@@ -76,8 +77,14 @@ Route::prefix('{locale}')
         }
 
         Route::get('/product/{slug}', ProductController::class)->name('product');
-        Route::get('/cart', CartPage::class)->name('cart');
-        Route::get('/checkout', CheckoutForm::class)->name('checkout');
+        // Unreachable rather than merely unlinked while ordering is off. It is
+        // middleware rather than a skipped registration so the route names
+        // always exist — see EnsureOrderingEnabled for why that matters.
+
+        Route::middleware(EnsureOrderingEnabled::class)->group(function () {
+            Route::get('/cart', CartPage::class)->name('cart');
+            Route::get('/checkout', CheckoutForm::class)->name('checkout');
+        });
     });
 
 if (app()->environment(['local', 'testing'])) {
@@ -98,7 +105,7 @@ if (app()->environment(['local', 'testing'])) {
 // enough to brute-force a working code. 20/min leaves ordinary checkout —
 // including a few validation retries — untouched.
 Route::post('/checkout', [CheckoutController::class, 'store'])
-    ->middleware('throttle:20,1')
+    ->middleware(['throttle:20,1', EnsureOrderingEnabled::class])
     ->name('checkout.store');
 Route::post('/payment/callback', PaymentCallbackController::class)
     ->middleware('throttle:60,1')

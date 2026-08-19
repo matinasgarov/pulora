@@ -1,0 +1,48 @@
+# Pulora — public preview.
+#
+# One machine, one small volume for the SQLite file. auto_stop/auto_start let
+# it sleep when nobody is looking and wake on the next request, which is what
+# keeps a browse-only preview inside the free allowance.
+app = "pulora"
+primary_region = "fra"   # Frankfurt — nearest region to Baku with a full Fly presence
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "production"
+  APP_DEBUG = "false"
+  LOG_CHANNEL = "stderr"
+
+  # The preview is a shop window: the catalogue, search and filters all work,
+  # the bag and checkout are closed. See config/shop.php.
+  PULORA_ORDERING_ENABLED = "false"
+
+  # SQLite on the mounted volume, so the catalogue and any admin edits survive
+  # a redeploy.
+  DB_CONNECTION = "sqlite"
+  DB_DATABASE = "/data/database.sqlite"
+
+  SESSION_DRIVER = "database"
+  CACHE_STORE = "database"
+  QUEUE_CONNECTION = "database"
+
+[[mounts]]
+  source = "pulora_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 80
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

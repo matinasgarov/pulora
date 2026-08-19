@@ -59,6 +59,7 @@
                 </svg>
             </label>
 
+            @if (config('shop.ordering'))
             <a href="{{ route('storefront.cart', absolute: false) }}"
                class="{{ $iconBtn }} relative"
                aria-label="{{ __('shop.nav.cart') }}">
@@ -77,6 +78,7 @@
                     @endif
                 @endif
             </a>
+            @endif
 
             {{-- The checkbox and its label/scrim/panel siblings live outside
                  <header> — see <x-nav-drawer/> in the layout — because this

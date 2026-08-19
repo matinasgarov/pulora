@@ -93,6 +93,9 @@ return [
         'total' => 'Total',
         'no_shipping' => 'We cannot ship to that country yet.',
     ],
+    'preview' => [
+        'ordering_soon' => 'Ordering opens soon. Until then, write to us and we will put one aside.',
+    ],
     'catalogue' => [
         'title' => 'Shop',
         'empty' => 'Nothing here yet.',

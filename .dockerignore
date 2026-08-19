@@ -1,0 +1,20 @@
+# The 60MB of source photography: the image is built from the normalised
+# fixtures in database/demo instead.
+/walletImages
+
+/node_modules
+/vendor
+/.git
+/.github
+/tests
+/storage/logs/*
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/database/database.sqlite
+.env
+.env.*
+!.env.example
+/.phpunit.cache
+/.worktrees
+/.claude
