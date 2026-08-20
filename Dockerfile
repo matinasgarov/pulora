@@ -4,12 +4,16 @@
 # installed at build, the Vite bundle in public/build is committed, and the
 # product photographs come from database/demo/card-holders. So the build needs
 # neither Node nor the 60MB of source photography.
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.4-fpm-alpine AS base
 
-RUN apk add --no-cache nginx supervisor sqlite libpng libjpeg-turbo freetype icu \
- && apk add --no-cache --virtual .build libpng-dev libjpeg-turbo-dev freetype-dev icu-dev \
+# sqlite-dev is a build dependency, not a runtime one: PHP 8 dropped the
+# bundled libsqlite, so pdo_sqlite compiles against the system headers. The
+# `sqlite` package below only carries the CLI and the shared library, which is
+# why the build failed here first — "Package 'sqlite3' not found".
+RUN apk add --no-cache nginx supervisor sqlite libpng libjpeg-turbo freetype icu libzip \
+ && apk add --no-cache --virtual .build libpng-dev libjpeg-turbo-dev freetype-dev icu-dev sqlite-dev libzip-dev \
  && docker-php-ext-configure gd --with-jpeg --with-freetype \
- && docker-php-ext-install -j"$(nproc)" gd intl pdo_sqlite opcache \
+ && docker-php-ext-install -j"$(nproc)" gd intl pdo_sqlite zip opcache \
  && apk del .build
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

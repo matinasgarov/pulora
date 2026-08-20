@@ -21,12 +21,20 @@ Three things that are easy to get wrong, and are already handled:
 ```sh
 fly launch --no-deploy          # accept the existing fly.toml
 fly volumes create pulora_data --size 1 --region fra
-fly secrets set APP_KEY="$(php artisan key:generate --show)"
+fly secrets set APP_KEY="$(php artisan key:generate --show --no-ansi | tr -d '\r')"
 fly deploy
 ```
 
 `APP_KEY` is the one secret that must be set. The container refuses to start
 without it and says so, rather than failing later on the first encrypted cookie.
+
+`--no-ansi` and the `tr` are not decoration. `key:generate --show` colours its
+output, and the PHP CLI on Windows ends the line with a carriage return; both
+ride along inside `"$(...)"`. The key is then the right length plus four
+invisible bytes, and every page 500s with *"Unsupported cipher or incorrect key
+length"* — which says nothing about the key having been pasted wrong. The
+entrypoint now checks that `APP_KEY` decodes to 32 bytes and refuses to boot
+otherwise, so this fails at the deploy with an explanation instead.
 
 ## What the preview does and does not do
 
