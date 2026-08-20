@@ -88,7 +88,8 @@ values from `WalletCatalogue.php` over the top on purpose, set
   `production` (see `AppServiceProvider`). Fly terminates TLS and `force_https`
   redirects, so that half is covered too.
 - The admin panel has no two-factor. Worth adding before it holds real orders.
-- SQLite on one volume is fine for a preview and for a shop this size. It is a
-  single point of failure with no backup: `flyctl ssh console -C "cat
-  /data/database.sqlite"` is the poor man's backup until it matters enough for
-  Postgres.
+- SQLite on one volume is fine for a preview and for a shop this size. Fly
+  snapshots the volume daily with 5-day retention (`flyctl volumes snapshots
+  list <id>`), so it is not unbacked — but it is still pinned to one physical
+  host, so the shop is down while that host is. Enough for a preview; revisit
+  before it holds real orders.
