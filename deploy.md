@@ -18,11 +18,29 @@ Three things that are easy to get wrong, and are already handled:
 
 ## First deploy
 
+Install flyctl first. `winget` is not present on every Windows install, so use
+Fly's own installer, which needs no admin rights:
+
+```powershell
+iwr https://fly.io/install.ps1 -useb | iex
+```
+
+It prints a PATH line to add. Add *only* the one directory — do not persist
+`$env:Path` wholesale, which copies the machine PATH into user scope:
+
+```powershell
+[Environment]::SetEnvironmentVariable('Path',
+    [Environment]::GetEnvironmentVariable('Path','User') + ";$HOME\.fly\bin", 'User')
+```
+
+The command is **`flyctl`** on Windows. The short `fly` alias is a symlink the
+installer only creates on macOS and Linux.
+
 ```sh
-fly launch --no-deploy          # accept the existing fly.toml
-fly volumes create pulora_data --size 1 --region fra
-fly secrets set APP_KEY="$(php artisan key:generate --show --no-ansi | tr -d '\r')"
-fly deploy
+flyctl launch --no-deploy          # accept the existing fly.toml
+flyctl volumes create pulora_data --size 1 --region fra
+flyctl secrets set APP_KEY="$(php artisan key:generate --show --no-ansi | tr -d '\r')"
+flyctl deploy
 ```
 
 `APP_KEY` is the one secret that must be set. The container refuses to start
@@ -51,12 +69,12 @@ shipping, never users, so `/admin/login` is reachable but nothing can pass it.
 That is deliberate for a public URL. To make yourself one later:
 
 ```sh
-fly ssh console -C "php artisan tinker"
+flyctl ssh console -C "php artisan tinker"
 ```
 
 ## Redeploying
 
-`fly deploy` reruns the entrypoint: migrate, then seed create-only. Prices or
+`flyctl deploy` reruns the entrypoint: migrate, then seed create-only. Prices or
 copy you corrected in the admin panel are **not** overwritten. To push the
 values from `WalletCatalogue.php` over the top on purpose, set
 `PULORA_RESEED_OVERWRITE=true` for one deploy and then remove it.
@@ -71,6 +89,6 @@ values from `WalletCatalogue.php` over the top on purpose, set
   redirects, so that half is covered too.
 - The admin panel has no two-factor. Worth adding before it holds real orders.
 - SQLite on one volume is fine for a preview and for a shop this size. It is a
-  single point of failure with no backup: `fly ssh console -C "cat
+  single point of failure with no backup: `flyctl ssh console -C "cat
   /data/database.sqlite"` is the poor man's backup until it matters enough for
   Postgres.
