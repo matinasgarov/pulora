@@ -108,10 +108,10 @@ final class WalletCatalogue
 
         return [
             // --- Dopp kits. Plain pair first, then the two carrying the emblem.
-            'a_' => ['name' => ['en' => 'Voyager Dopp Kit — Walnut', 'az' => 'Voyager Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 14900, 'leather' => $crazyHorse, 'description' => $doppKit],
-            'b_' => ['name' => ['en' => 'Voyager Dopp Kit — Black', 'az' => 'Voyager Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 14900, 'leather' => $crazyHorse, 'description' => $doppKit],
-            'd_' => ['name' => ['en' => 'Presidential Dopp Kit — Walnut', 'az' => 'Prezident Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 16900, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
-            'c_' => ['name' => ['en' => 'Presidential Dopp Kit — Black', 'az' => 'Prezident Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 16900, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
+            'a_' => ['name' => ['en' => 'Voyager Dopp Kit — Walnut', 'az' => 'Voyager Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 7500, 'leather' => $crazyHorse, 'description' => $doppKit],
+            'b_' => ['name' => ['en' => 'Voyager Dopp Kit — Black', 'az' => 'Voyager Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 7500, 'leather' => $crazyHorse, 'description' => $doppKit],
+            'd_' => ['name' => ['en' => 'Presidential Dopp Kit — Walnut', 'az' => 'Prezident Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
+            'c_' => ['name' => ['en' => 'Presidential Dopp Kit — Black', 'az' => 'Prezident Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
 
             // --- The emblem bifold, in its three colours.
             'g' => ['name' => ['en' => 'Presidential Bifold — Cognac', 'az' => 'Prezident Cüzdanı — Konyak'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
