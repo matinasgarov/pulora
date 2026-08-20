@@ -18,3 +18,10 @@
 /.phpunit.cache
 /.worktrees
 /.claude
+
+# A symlink created by `artisan storage:link` on the host, pointing at an
+# absolute host path that does not exist in the image. Docker's tar writer
+# cannot even encode its mode from Windows — "unknown file mode ?rwxr-xr-x" —
+# so the build fails before it starts. The entrypoint runs storage:link itself
+# on every boot, which makes the link correctly, inside the container.
+/public/storage
