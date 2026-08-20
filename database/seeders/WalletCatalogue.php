@@ -135,10 +135,10 @@ final class WalletCatalogue
 
             // --- The open-top holders embossed with the maker's name. Two
             //     shapes, two colours each, each pair kept side by side.
-            'a__' => ['name' => ['en' => 'Signature Card Holder — Walnut', 'az' => 'İmza Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
-            'b__' => ['name' => ['en' => 'Signature Card Holder — Black', 'az' => 'İmza Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
-            'c__' => ['name' => ['en' => 'Slim Card Holder — Walnut', 'az' => 'Nazik Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
-            'd__' => ['name' => ['en' => 'Slim Card Holder — Black', 'az' => 'Nazik Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
+            'a__' => ['name' => ['en' => 'Signature Card Holder — Walnut', 'az' => 'İmza Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 2500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
+            'b__' => ['name' => ['en' => 'Signature Card Holder — Black', 'az' => 'İmza Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 2500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
+            'c__' => ['name' => ['en' => 'Slim Card Holder — Walnut', 'az' => 'Nazik Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 2500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
+            'd__' => ['name' => ['en' => 'Slim Card Holder — Black', 'az' => 'Nazik Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 2500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
 
             // --- Money clips.
             'm' => ['name' => ['en' => 'Snap Money Clip — Walnut', 'az' => 'Düyməli Pul Sıxacağı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 5500, 'leather' => $crazyHorse, 'description' => $snapMoneyClip],

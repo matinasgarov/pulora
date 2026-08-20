@@ -11,6 +11,15 @@
          then hides itself. --}}
     <script>document.documentElement.classList.add('js')</script>
     <title>{{ $title ? $title.' — Pulora' : 'Pulora' }}</title>
+    {{-- The mark sits on the shop's own cream rather than on transparency:
+         it is dark brown, and a browser is given one icon for both a light
+         and a dark tab strip. ?v= because public/favicon.ico shipped empty
+         for months, and an empty icon is exactly what a browser caches as
+         "this site has none" — bump it if the mark ever changes. --}}
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#f0e9dd">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-ground font-sans text-ink antialiased">
