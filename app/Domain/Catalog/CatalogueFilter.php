@@ -167,7 +167,12 @@ final readonly class CatalogueFilter
             'price_desc' => $query->orderByDesc('base_price_minor')->orderBy('id'),
             'newest' => $query->orderByDesc('created_at')->orderByDesc('id'),
             // "Featured" is the operator's own order, which is insertion order.
-            default => $query->orderBy('id'),
+            // 'featured' is the operator's own order. It used to be the id
+            // order, which is whatever order rows were inserted in — so every
+            // batch of products added after the first seeding piled up at the
+            // end regardless of where WalletCatalogue.php puts them. id stays
+            // as the tiebreak so the sort is still total.
+            default => $query->orderBy('sort_order')->orderBy('id'),
         };
     }
 }

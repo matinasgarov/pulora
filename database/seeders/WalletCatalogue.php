@@ -73,6 +73,16 @@ final class WalletCatalogue
             'az' => 'Qapağı içəri keçən nazik kart qabı — astara ilişəcək heç bir metal detal yoxdur. Əllə kəsilib, yəhər tikişi ilə tikilib, kənarları boyanıb.',
         ];
 
+        $signatureCardHolder = [
+            'en' => 'An open-top card holder in crazy horse leather with PULORA blind-embossed into the front — pressed into the hide by hand, no ink and no foil. Slots on both faces and a centre pocket, rounded at the corners so it does not wear through a pocket lining.',
+            'az' => 'Crazy horse dərisindən üstü açıq kart qabı; ön üzündə PULORA adı boyasız və folqasız, əllə basılıb. Hər iki üzündə yuvalar, ortada cib; küncləri yumrudur ki, cibin astarını deşməsin.',
+        ];
+
+        $slimCardHolder = [
+            'en' => 'The same open-top card holder cut from smooth full-grain leather rather than crazy horse — sharper at the corners, and it keeps an even colour instead of darkening where it is handled. PULORA blind-embossed into the front, a slip pocket behind for folded notes.',
+            'az' => 'Eyni üstü açıq kart qabı, crazy horse yerinə hamar tam dənəli dəridən: künclər daha dəqiq, rəng isə əl dəydikcə tündləşmir, bərabər qalır. Ön üzdə boyasız basılmış PULORA, arxada qatlanmış pul üçün cib.',
+        ];
+
         $cardPouch = [
             'en' => 'A small flap pouch on a single snap, for cards, a folded note or a key. The lightest thing in the collection.',
             'az' => 'Tək düyməli kiçik qapaqlı cib — kartlar, qatlanmış pul və ya açar üçün. Kolleksiyanın ən yüngül parçası.',
@@ -104,9 +114,9 @@ final class WalletCatalogue
             'c_' => ['name' => ['en' => 'Presidential Dopp Kit — Black', 'az' => 'Prezident Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 16900, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
 
             // --- The emblem bifold, in its three colours.
-            'g' => ['name' => ['en' => 'Presidential Bifold — Cognac', 'az' => 'Prezident Cüzdanı — Konyak'], 'category' => ProductCategory::Wallet, 'price' => 8900, 'leather' => $fullGrain, 'description' => $presidentialBifold],
-            'f' => ['name' => ['en' => 'Presidential Bifold — Black', 'az' => 'Prezident Cüzdanı — Qara'], 'category' => ProductCategory::Wallet, 'price' => 8900, 'leather' => $fullGrain, 'description' => $presidentialBifold],
-            'h' => ['name' => ['en' => 'Presidential Bifold — Oxblood', 'az' => 'Prezident Cüzdanı — Tünd Qırmızı'], 'category' => ProductCategory::Wallet, 'price' => 8900, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'g' => ['name' => ['en' => 'Presidential Bifold — Cognac', 'az' => 'Prezident Cüzdanı — Konyak'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'f' => ['name' => ['en' => 'Presidential Bifold — Black', 'az' => 'Prezident Cüzdanı — Qara'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'h' => ['name' => ['en' => 'Presidential Bifold — Oxblood', 'az' => 'Prezident Cüzdanı — Tünd Qırmızı'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
 
             // --- Snap bifolds.
             'j' => ['name' => ['en' => 'Snap Bifold — Walnut', 'az' => 'Düyməli Cüzdan — Qəhvəyi'], 'category' => ProductCategory::Wallet, 'price' => 7900, 'leather' => $crazyHorse, 'description' => $snapBifold],
@@ -122,6 +132,13 @@ final class WalletCatalogue
             'y' => ['name' => ['en' => 'Flap Card Case — Black', 'az' => 'Qapaqlı Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $fullGrain, 'description' => $flapCardCase],
             'e' => ['name' => ['en' => 'Flap Card Case — Walnut', 'az' => 'Qapaqlı Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $crazyHorse, 'description' => $flapCardCase],
             'd' => ['name' => ['en' => 'Flap Card Pouch — Tan', 'az' => 'Qapaqlı Kart Cibi — Sarı'], 'category' => ProductCategory::Card, 'price' => 3900, 'leather' => $fullGrain, 'description' => $cardPouch],
+
+            // --- The open-top holders embossed with the maker's name. Two
+            //     shapes, two colours each, each pair kept side by side.
+            'a__' => ['name' => ['en' => 'Signature Card Holder — Walnut', 'az' => 'İmza Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
+            'b__' => ['name' => ['en' => 'Signature Card Holder — Black', 'az' => 'İmza Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $crazyHorse, 'description' => $signatureCardHolder],
+            'c__' => ['name' => ['en' => 'Slim Card Holder — Walnut', 'az' => 'Nazik Kart Qabı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
+            'd__' => ['name' => ['en' => 'Slim Card Holder — Black', 'az' => 'Nazik Kart Qabı — Qara'], 'category' => ProductCategory::Card, 'price' => 4500, 'leather' => $fullGrain, 'description' => $slimCardHolder],
 
             // --- Money clips.
             'm' => ['name' => ['en' => 'Snap Money Clip — Walnut', 'az' => 'Düyməli Pul Sıxacağı — Qəhvəyi'], 'category' => ProductCategory::Card, 'price' => 5500, 'leather' => $crazyHorse, 'description' => $snapMoneyClip],

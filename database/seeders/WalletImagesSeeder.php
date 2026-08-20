@@ -45,13 +45,13 @@ class WalletImagesSeeder extends Seeder
      */
     public static function isProductPhoto(string $basename): bool
     {
-        return preg_match('/^[a-z]_?[0-9]+$/', strtolower($basename)) === 1;
+        return preg_match('/^[a-z]_*[0-9]+$/', strtolower($basename)) === 1;
     }
 
     /** The grouping key: everything before the trailing number. */
     public static function prefix(string $basename): string
     {
-        preg_match('/^([a-z]_?)[0-9]+$/', strtolower($basename), $m);
+        preg_match('/^([a-z]_*)[0-9]+$/', strtolower($basename), $m);
 
         return $m[1] ?? '';
     }
@@ -92,6 +92,7 @@ class WalletImagesSeeder extends Seeder
 
         $written = [];
         $slugs = [];
+        $position = 0;
 
         // Driven by the catalogue's order, not the folder's, so that the same
         // piece in three colours lands in three adjacent tiles. Products are
@@ -107,6 +108,7 @@ class WalletImagesSeeder extends Seeder
 
             $slug = Str::slug($definition['name']['en']);
             $slugs[] = $slug;
+            $position++;
 
             $product = Product::firstOrNew(['slug' => $slug]);
 
@@ -139,6 +141,16 @@ class WalletImagesSeeder extends Seeder
 
             // Stock is a live number the operator manages, so it is only ever
             // set when the variant is first created.
+            // Position is the one field written on every run rather than only
+            // on create. It is not operator content — it is decided by the
+            // order of the list above, and there is no way to reorder products
+            // in the admin panel for this to fight with. Leaving it create-only
+            // would mean a piece inserted between two others in that list never
+            // moved for anyone who already had the shop seeded.
+            if ($product->sort_order !== $position) {
+                $product->forceFill(['sort_order' => $position])->save();
+            }
+
             Variant::firstOrCreate(
                 ['sku' => 'PUL-'.strtoupper(str_replace('_', 'X', $prefix))],
                 [

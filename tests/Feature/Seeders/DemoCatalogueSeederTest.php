@@ -15,7 +15,7 @@ it('builds the whole catalogue without the source photographs', function () {
 
     $products = Product::query()->where('is_active', true)->get();
 
-    expect($products)->toHaveCount(22);
+    expect($products)->toHaveCount(26);
 
     foreach ($products as $product) {
         expect($product->images)->not->toBeEmpty($product->slug);

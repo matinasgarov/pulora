@@ -5,7 +5,7 @@ use Database\Seeders\WalletCatalogue;
 use Database\Seeders\WalletImagesSeeder;
 
 it('tells a product photograph from anything else dropped in the folder', function () {
-    foreach (['a1', 'k3', 'a_1', 'd_2', 'y10'] as $ok) {
+    foreach (['a1', 'k3', 'a_1', 'd_2', 'y10', 'a__1', 'd__2'] as $ok) {
         expect(WalletImagesSeeder::isProductPhoto($ok))->toBeTrue($ok);
     }
 
@@ -16,13 +16,19 @@ it('tells a product photograph from anything else dropped in the folder', functi
     }
 });
 
-it('keeps the underscore, so a1 and a_1 stay two different products', function () {
-    // a1 is the teal card case; a_1 is the walnut dopp kit. Trimming the
-    // underscore as though it were a separator would merge them.
+it('keeps every underscore, so a1, a_1 and a__1 stay three products', function () {
+    // a1 is the teal card case, a_1 the walnut dopp kit, a__1 the signature
+    // card holder. Each batch of photographs has arrived under the same
+    // letters with one more underscore, so the count is not fixed at one:
+    // trimming them, or allowing only a single one, folds a whole batch into
+    // the batch before it.
     expect(WalletImagesSeeder::prefix('a1'))->toBe('a')
         ->and(WalletImagesSeeder::prefix('a_1'))->toBe('a_')
-        ->and(WalletImagesSeeder::prefix('d_12'))->toBe('d_');
+        ->and(WalletImagesSeeder::prefix('d_12'))->toBe('d_')
+        ->and(WalletImagesSeeder::prefix('a__1'))->toBe('a__')
+        ->and(WalletImagesSeeder::prefix('d__2'))->toBe('d__');
 });
+
 
 it('gives every group a name in both languages', function () {
     foreach (WalletCatalogue::all() as $prefix => $d) {

@@ -4,7 +4,7 @@ use Database\Seeders\WalletImagesSeeder;
 
 it('accepts a letter-number product photo name', function (string $name) {
     expect(WalletImagesSeeder::isProductPhoto($name))->toBeTrue();
-})->with(['a1', 'K3', 'h4', 'z12']);
+})->with(['a1', 'K3', 'h4', 'z12', 'a__1', 'D__2']);
 
 it('rejects anything that is not a bare letter-number name', function (string $name) {
     // hero.png landed on the H wallet, and a stray "ChatGPT Image….png" landed
