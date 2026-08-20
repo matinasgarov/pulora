@@ -147,8 +147,13 @@ class WalletImagesSeeder extends Seeder
             // in the admin panel for this to fight with. Leaving it create-only
             // would mean a piece inserted between two others in that list never
             // moved for anyone who already had the shop seeded.
-            if ($product->sort_order !== $position) {
-                $product->forceFill(['sort_order' => $position])->save();
+            // sort_order and seeded are both written on every run rather than
+            // only on create — see the comment above for sort_order. seeded
+            // additionally backfills onto rows that already existed before this
+            // column did, so a product created before today still becomes
+            // eligible for the prune below on its next seed.
+            if ($product->sort_order !== $position || ! $product->seeded) {
+                $product->forceFill(['sort_order' => $position, 'seeded' => true])->save();
             }
 
             Variant::firstOrCreate(
@@ -200,12 +205,16 @@ class WalletImagesSeeder extends Seeder
             ProductImage::where('product_id', $product->id)->whereNotIn('path', $paths)->delete();
         }
 
-        // Products from an earlier naming scheme. Orders keep their own
-        // snapshot of name, sku and price, so removing the product they were
-        // bought from does not alter what a customer was charged or shown.
+        // Anything this seeder created whose slug is no longer in the list —
+        // most often a rename, which changes the slug and so cannot update the
+        // old row via firstOrNew(). Restricted to seeded rows so a product
+        // added by hand in the admin panel, whatever its slug looks like, is
+        // never touched. Orders keep their own snapshot of name, sku and
+        // price, so removing the product they were bought from does not alter
+        // what a customer was charged or shown.
         Product::query()
+            ->where('seeded', true)
             ->whereNotIn('slug', $slugs)
-            ->where('slug', 'like', 'card-holder-%')
             ->delete();
 
         // Anything left in the target directory that this run did not write is

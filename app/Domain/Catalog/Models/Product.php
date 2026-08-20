@@ -30,6 +30,7 @@ class Product extends Model
     protected $casts = [
         'base_price_minor' => 'integer',
         'is_active' => 'boolean',
+        'seeded' => 'boolean',
         'category' => ProductCategory::class,
         'tag' => ProductTag::class,
         'specs' => TranslatableListCast::class,

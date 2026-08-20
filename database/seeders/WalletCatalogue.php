@@ -18,8 +18,9 @@ use App\Domain\Catalog\ProductCategory;
  * than scattered across two pages — which is the whole reason this list is
  * hand-ordered rather than alphabetical by prefix.
  *
- * "Presidential" is the pieces carrying the Azerbaijani state emblem: the
- * eight-pointed star with the flame at its centre, over oak and wheat.
+ * "The President" is the pieces carrying the Azerbaijani state emblem: the
+ * eight-pointed star with the flame at its centre, over oak and wheat. Azerbaijani
+ * has no article, so the AZ names stay "Prezident" rather than gaining one.
  *
  * The copy here describes material, construction and use. It deliberately does
  * not claim card counts or dimensions: those are not readable from a
@@ -110,13 +111,13 @@ final class WalletCatalogue
             // --- Dopp kits. Plain pair first, then the two carrying the emblem.
             'a_' => ['name' => ['en' => 'Voyager Dopp Kit — Walnut', 'az' => 'Voyager Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 7500, 'leather' => $crazyHorse, 'description' => $doppKit],
             'b_' => ['name' => ['en' => 'Voyager Dopp Kit — Black', 'az' => 'Voyager Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 7500, 'leather' => $crazyHorse, 'description' => $doppKit],
-            'd_' => ['name' => ['en' => 'Presidential Dopp Kit — Walnut', 'az' => 'Prezident Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
-            'c_' => ['name' => ['en' => 'Presidential Dopp Kit — Black', 'az' => 'Prezident Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
+            'd_' => ['name' => ['en' => 'The President Dopp Kit — Walnut', 'az' => 'Prezident Səyahət Çantası — Qəhvəyi'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
+            'c_' => ['name' => ['en' => 'The President Dopp Kit — Black', 'az' => 'Prezident Səyahət Çantası — Qara'], 'category' => ProductCategory::Bag, 'price' => 8500, 'leather' => $crazyHorse, 'description' => $presidentialDoppKit],
 
             // --- The emblem bifold, in its three colours.
-            'g' => ['name' => ['en' => 'Presidential Bifold — Cognac', 'az' => 'Prezident Cüzdanı — Konyak'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
-            'f' => ['name' => ['en' => 'Presidential Bifold — Black', 'az' => 'Prezident Cüzdanı — Qara'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
-            'h' => ['name' => ['en' => 'Presidential Bifold — Oxblood', 'az' => 'Prezident Cüzdanı — Tünd Qırmızı'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'g' => ['name' => ['en' => 'The President Bifold — Cognac', 'az' => 'Prezident Cüzdanı — Konyak'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'f' => ['name' => ['en' => 'The President Bifold — Black', 'az' => 'Prezident Cüzdanı — Qara'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
+            'h' => ['name' => ['en' => 'The President Bifold — Oxblood', 'az' => 'Prezident Cüzdanı — Tünd Qırmızı'], 'category' => ProductCategory::Wallet, 'price' => 5500, 'leather' => $fullGrain, 'description' => $presidentialBifold],
 
             // --- Snap bifolds.
             'j' => ['name' => ['en' => 'Snap Bifold — Walnut', 'az' => 'Düyməli Cüzdan — Qəhvəyi'], 'category' => ProductCategory::Wallet, 'price' => 7900, 'leather' => $crazyHorse, 'description' => $snapBifold],
