@@ -32,6 +32,19 @@ RUN composer dump-autoload --optimize --no-dev
 RUN mkdir -p /data \
  && chown -R www-data:www-data storage bootstrap/cache /data
 
+# Blade compilation is pure source-to-source — it reads resources/views and
+# writes storage/framework/views, and touches neither the environment nor the
+# database. It took three seconds of every single cold start, which mattered a
+# great deal: Fly's proxy gives the app about eight seconds to start answering
+# before it gives up and retries with a backoff, so a boot that overran turned
+# a ten-second start into a twenty-four-second one. Doing it here costs those
+# seconds once per deploy instead of once per wake-up.
+#
+# config:cache and route:cache deliberately stay in the entrypoint: both bake
+# environment values into the cache, and the environment at build time is not
+# the environment the container runs in.
+RUN php artisan view:cache
+
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh

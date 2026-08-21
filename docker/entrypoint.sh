@@ -40,15 +40,42 @@ DB=/data/database.sqlite
 # state — so the link is remade on every boot.
 php artisan storage:link --force >/dev/null 2>&1 || true
 
-php artisan migrate --force --no-interaction
+# Migrating and seeding are deploy work, not boot work, but the entrypoint runs
+# on every wake-up as well as every deploy — and the machine sleeps when idle,
+# so 'every wake-up' is 'every visitor who arrives after a quiet spell'. Doing
+# them unconditionally cost about four seconds each time to discover there was
+# nothing to do, on top of the three for Blade. Overrunning matters more than
+# the seconds suggest: Fly's proxy waits roughly eight seconds for the app to
+# answer, then gives up and retries with a backoff, which turned a ten-second
+# boot into a twenty-four-second one for whoever was waiting.
+#
+# So they run once per image instead. FLY_IMAGE_REF changes with every deploy;
+# the stamp lives on the volume, beside the database it describes. If the
+# variable is missing — running this image anywhere that is not Fly — the
+# guard opens and both run, because being slow is better than being unmigrated.
+STAMP=/data/.provisioned
+CURRENT="${FLY_IMAGE_REF:-}"
 
-# Create-only, so a price corrected in the admin panel survives a redeploy.
-php artisan db:seed --class=DemoCatalogueSeeder --force --no-interaction
+if [ -z "$CURRENT" ] || [ "$(cat "$STAMP" 2>/dev/null)" != "$CURRENT" ]; then
+    php artisan migrate --force --no-interaction
 
+    # Create-only, so a price corrected in the admin panel survives a redeploy.
+    php artisan db:seed --class=DemoCatalogueSeeder --force --no-interaction
+
+    # Only stamp when there is something to stamp: off Fly the guard above is
+    # always open, so every boot migrates and seeds.
+    if [ -n "$CURRENT" ]; then
+        printf '%s' "$CURRENT" > "$STAMP"
+    fi
+else
+    echo "Already provisioned for this image; skipping migrate and seed."
+fi
+
+# Both bake environment values into the cache, so unlike view:cache — which is
+# built into the image — these have to happen here, where the real environment
+# exists. Together they cost about a second.
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
-
 # Last, not first: every command above runs as root and leaves root-owned
 # caches, the SQLite file and its -wal/-shm siblings behind. php-fpm runs as
 # www-data, so without this the first request fails trying to write a session.
