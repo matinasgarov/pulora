@@ -6,6 +6,7 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\Models\ProductImage;
 use App\Domain\Catalog\Models\Variant;
 use App\Domain\Catalog\ProductCategory;
+use App\Support\ProductImageDerivatives;
 use App\Support\ProductImageNormalizer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -169,7 +170,7 @@ class WalletImagesSeeder extends Seeder
 
             $paths = [];
 
-            $files->values()->each(function ($file, int $index) use ($product, $definition, $target, &$written, &$paths) {
+            $files->values()->each(function ($file, int $index) use ($product, $definition, $source, $target, &$written, &$paths) {
                 // Always .jpg: the normalizer re-encodes, so the source
                 // extension (.jfif, .png) says nothing about the output.
                 $filename = strtolower($file->getBasename('.'.$file->getExtension())).'.jpg';
@@ -183,6 +184,13 @@ class WalletImagesSeeder extends Seeder
                 }
 
                 $written[] = $filename;
+
+                // The grid and the gallery filmstrip use these; without them
+                // both fall back to the full-size file. Recorded in $written
+                // so the prune at the end does not treat them as strays.
+                foreach (app(ProductImageDerivatives::class)->copyOrGenerate($filename, $source, $target) as $derivative) {
+                    $written[] = $derivative;
+                }
                 $path = 'card-holders/'.$filename;
                 $paths[] = $path;
 

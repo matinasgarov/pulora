@@ -16,9 +16,12 @@
     <div class="relative aspect-square overflow-hidden bg-ground">
         <a href="{{ $productUrl }}" class="absolute inset-0 block">
             @if ($image)
-                <img src="{{ asset('storage/'.$image->path) }}"
-                     alt="{{ $image->alt_text }}"
-                     class="h-full w-full object-contain transition-opacity duration-500 group-hover:opacity-90">
+                {{-- 600px, not the 1200x1500 original: this frame is about
+                     400px wide, so the full file was nine times the pixels it
+                     can show. Twelve of them made page one 1.7MB. --}}
+                <x-product-image :path="$image->path"
+                                 :alt="$image->alt_text"
+                                 class="h-full w-full object-contain transition-opacity duration-500 group-hover:opacity-90" />
             @else
                 <x-placeholder-frame
                     :caption="__('shop.placeholder.tile', ['name' => $product->name])"

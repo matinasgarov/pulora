@@ -60,7 +60,11 @@
                    data-gallery-thumb="{{ $index }}"
                    aria-label="{{ __('shop.product.gallery.go_to', ['number' => $index + 1]) }}"
                    class="aspect-square w-[68px] shrink-0 overflow-hidden border border-transparent bg-ground aria-[current=true]:border-ink">
-                    <img src="{{ asset('storage/'.$image->path) }}" alt="" class="h-full w-full object-contain">
+                    {{-- 68px on screen; this used to load the full-size file. --}}
+                    <x-product-image :path="$image->path"
+                                     :width="\App\Support\ProductImageDerivatives::THUMB"
+                                     alt=""
+                                     class="h-full w-full object-contain" />
                 </a>
             @endforeach
         </div>

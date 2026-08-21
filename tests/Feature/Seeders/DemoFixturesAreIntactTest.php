@@ -19,7 +19,13 @@ use Illuminate\Support\Facades\File;
  * a person looking at the grid could tell, which is exactly what happened.
  */
 it('has no fixture that is a flat rectangle where a photograph should be', function () {
-    $files = File::files(database_path('demo/card-holders'));
+    // The full-size originals only. The -600 and -160 derivatives beside them
+    // are produced from these, so a flat original is the thing worth catching;
+    // and half of them are WebP, which imagecreatefromjpeg cannot read.
+    $files = collect(File::files(database_path('demo/card-holders')))
+        ->filter(fn ($file) => $file->getExtension() === 'jpg')
+        ->reject(fn ($file) => preg_match('/-\d+$/', $file->getBasename('.jpg')) === 1)
+        ->values();
 
     expect($files)->not->toBeEmpty('the deploy fixtures are missing');
 
@@ -47,6 +53,11 @@ it('has no fixture that is a flat rectangle where a photograph should be', funct
         }
 
         $deviation = sqrt($variance / count($samples));
+
+        // A 1200x1500 truecolor image is about 7MB in memory and there are 72
+        // of them; without this the loop exhausts the memory limit partway
+        // through, which reads as a broken test rather than a broken fixture.
+        unset($image);
 
         // Leather photographed at this size always carries grain, stitching or
         // a highlight. The flattest real fixture measures about 5; the black
