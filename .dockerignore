@@ -25,3 +25,15 @@
 # so the build fails before it starts. The entrypoint runs storage:link itself
 # on every boot, which makes the link correctly, inside the container.
 /public/storage
+
+# Laravel's runtime caches, which are per-environment and must never be baked
+# into an image. packages.php and services.php are fine — the build regenerates
+# them via package:discover — but config.php and routes-v7.php hold resolved
+# values from wherever they were generated. A developer who runs
+# `php artisan config:cache` locally and then builds would otherwise ship their
+# own APP_KEY and database path to production, and the entrypoint no longer
+# overwrites them: it deliberately does not cache config or routes, because
+# doing so cost four seconds of every wake-up.
+/bootstrap/cache/config.php
+/bootstrap/cache/routes-v7.php
+/bootstrap/cache/events.php

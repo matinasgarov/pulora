@@ -66,11 +66,26 @@ else
     echo "Already provisioned for this image; skipping migrate and seed."
 fi
 
-# Both bake environment values into the cache, so unlike view:cache — which is
-# built into the image — these have to happen here, where the real environment
-# exists. Together they cost about a second.
-php artisan config:cache
-php artisan route:cache
+# config:cache and route:cache are deliberately NOT run.
+#
+# They cannot be built into the image the way view:cache can, because both
+# bake environment values in and the build environment is not the runtime one.
+# That left them here, where they cost about four seconds of every wake-up —
+# two artisan bootstraps on a shared CPU — which was the largest remaining
+# item once migrate, seed, storage:link and the recursive chown were dealt
+# with, and the difference between a four-second cold start and an
+# eight-second one.
+#
+# Without them Laravel parses config/ and routes/ per request instead. That is
+# real but small — tens of milliseconds, against seconds of boot — and this is
+# a preview that sleeps when idle, so almost every visitor pays the boot and
+# very few make enough requests for the per-request cost to add up. Revisit
+# when the shop opens and the machine stops sleeping: at that point the trade
+# reverses, and the caches want to move onto the volume behind the same
+# FLY_IMAGE_REF stamp used above rather than simply coming back here.
+#
+# One incidental benefit: with no config cache, env() works everywhere rather
+# than silently returning null outside config files.
 # Last, not first: the commands above run as root and leave root-owned files
 # behind — the config and route caches, the SQLite file and its -wal/-shm
 # siblings. php-fpm runs as www-data, so without this the first request fails
