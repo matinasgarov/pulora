@@ -72,7 +72,7 @@
             {{-- Phase 3 builds the bespoke configurator; until then this
                  points wherever the homepage's bespoke CTA points, via the
                  shared BespokeCta::href() helper. --}}
-            <a href="{{ $bespokeCtaHref }}"
+            <a href="{{ $bespokeCtaHref }}" @if (\App\Domain\Catalog\BespokeCta::isExternal()) target="_blank" rel="noopener" @endif
                class="mt-4 block w-full border border-ink px-6 py-[19px] text-center font-sans text-[11px] uppercase tracking-[0.18em] text-ink hover:border-accent hover:text-accent">
                 {{ __('shop.product.bespoke_cta') }}
             </a>

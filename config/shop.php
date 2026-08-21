@@ -27,4 +27,13 @@ return [
      */
     'ordering' => env('PULORA_ORDERING_ENABLED', true),
 
+    /*
+     * The shop's WhatsApp number, digits only, in international form.
+     *
+     * This is how someone reaches the atelier while ordering is closed. It
+     * is a real number a real person answers, so it lives in config rather
+     * than being written into a view or a helper.
+     */
+    'whatsapp' => env('SHOP_WHATSAPP') ?: '994507704546',
+
 ];

@@ -294,7 +294,7 @@
                     </div>
                 </div>
 
-                <a href="{{ $bespokeCtaHref }}"
+                <a href="{{ $bespokeCtaHref }}" @if (\App\Domain\Catalog\BespokeCta::isExternal()) target="_blank" rel="noopener" @endif
                    class="mt-10 inline-block bg-ink px-[46px] py-[17px] text-center font-sans text-[11px] uppercase tracking-[0.18em] text-ground hover:bg-accent">
                     {{ __('shop.bespoke.cta') }}
                 </a>
