@@ -35,11 +35,6 @@ fi
 DB=/data/database.sqlite
 [ -f "$DB" ] || touch "$DB"
 
-# The storefront serves photographs from storage/app/public through a symlink.
-# Both live in the image rather than the volume — they are build artefacts, not
-# state — so the link is remade on every boot.
-php artisan storage:link --force >/dev/null 2>&1 || true
-
 # Migrating and seeding are deploy work, not boot work, but the entrypoint runs
 # on every wake-up as well as every deploy — and the machine sleeps when idle,
 # so 'every wake-up' is 'every visitor who arrives after a quiet spell'. Doing
@@ -76,9 +71,15 @@ fi
 # exists. Together they cost about a second.
 php artisan config:cache
 php artisan route:cache
-# Last, not first: every command above runs as root and leaves root-owned
-# caches, the SQLite file and its -wal/-shm siblings behind. php-fpm runs as
-# www-data, so without this the first request fails trying to write a session.
-chown -R www-data:www-data /data storage bootstrap/cache
+# Last, not first: the commands above run as root and leave root-owned files
+# behind — the config and route caches, the SQLite file and its -wal/-shm
+# siblings. php-fpm runs as www-data, so without this the first request fails
+# trying to write a session.
+#
+# storage/ is deliberately not in this list. It is owned correctly in the image
+# and nothing at runtime writes to it, but recursing over it meant walking the
+# product photographs on every wake-up, which cost five seconds. These two are
+# a handful of files each.
+chown -R www-data:www-data /data bootstrap/cache
 
 exec "$@"

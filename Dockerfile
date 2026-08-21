@@ -29,8 +29,7 @@ RUN composer dump-autoload --optimize --no-dev
 
 # The database lives on the mounted volume so it survives a redeploy; this is
 # only the directory it will be mounted over.
-RUN mkdir -p /data \
- && chown -R www-data:www-data storage bootstrap/cache /data
+RUN mkdir -p /data
 
 # Blade compilation is pure source-to-source — it reads resources/views and
 # writes storage/framework/views, and touches neither the environment nor the
@@ -43,7 +42,18 @@ RUN mkdir -p /data \
 # config:cache and route:cache deliberately stay in the entrypoint: both bake
 # environment values into the cache, and the environment at build time is not
 # the environment the container runs in.
-RUN php artisan view:cache
+RUN php artisan view:cache \
+ && php artisan storage:link --force
+
+# After view:cache and storage:link, not before: both run as root and would
+# otherwise leave root-owned files for php-fpm to trip over.
+#
+# Doing it here is what keeps it out of the entrypoint. Recursing over storage/
+# means walking the 72 product photographs, which cost five seconds of every
+# wake-up — the largest remaining item once migrate and seed were gone, and
+# enough on its own to blow the proxy's eight-second patience. None of it
+# changes at runtime, so it belongs in the image.
+RUN chown -R www-data:www-data storage bootstrap/cache /data
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
